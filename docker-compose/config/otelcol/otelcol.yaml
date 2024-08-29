@@ -1,0 +1,74 @@
+receivers:
+  otlp/otelcol:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  #dockerlogs:
+  #  endpoint: unix:///var/run/docker.sock
+  #  exclude_containers: []
+  #  exclude_images: []
+  #  timeout: 5s
+  #  storage: file_storage
+  #  encoding: utf-8
+  #filelog/containers:
+  #  include: [ /var/lib/docker/containers/*/*-json.log ]
+  #  start_at: beginning
+  #  storage: file_storage
+  #  operators:
+  #    - type: json_parser
+  #    - type: timestamp
+  #      parse_from: attributes.time
+  #      layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 200
+  batch:
+
+exporters:
+  debug:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    const_labels:
+      source: otelcol
+  #otlp/jaeger:
+  #  endpoint: jaeger-all-in-one:4317
+  #  tls:
+  #    insecure: true
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+  file_storage/otelcol:
+    directory: /var/lib/otelcol
+    timeout: 1s
+
+service:
+  extensions: [pprof, zpages, health_check, file_storage/otelcol]
+  pipelines:
+    traces:
+      receivers: [otlp/otelcol]
+      processors: [batch]
+      #exporters: [debug, otlp/jaeger, otlp/tempo]
+      exporters: [debug, otlp/tempo]
+    metrics:
+      receivers: [otlp/otelcol]
+      processors: [batch]
+      exporters: [debug, prometheus]
+    logs:
+      #receivers: [filelog/containers, otlp/otelcol]
+      receivers: [otlp/otelcol]
+      processors: [batch]
+      exporters: [loki]
