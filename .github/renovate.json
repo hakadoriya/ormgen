@@ -1,0 +1,39 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["config:recommended"],
+	"timezone": "Asia/Tokyo",
+	"dependencyDashboard": false,
+	"prHourlyLimit": 200,
+	"prConcurrentLimit": 200,
+	"reviewersFromCodeOwners": true,
+	"requiredStatusChecks": true,
+	"automerge": false,
+	"platformAutomerge": false,
+	"labels": ["build", "renovate"],
+	"description": "MEMO: About gomodTidy, gomodNoMassage <https://github.com/renovatebot/renovate/issues/6213>; go <https://github.com/renovatebot/renovate/issues/16715>; gomod <https://github.com/open-telemetry/opentelemetry-collector/blob/main/renovate.json>;",
+	"packageRules": [
+		{
+			"groupName": "github-actions",
+			"matchManagers": ["github-actions"]
+		},
+		{
+			"groupName": "dockerfile",
+			"matchManagers": ["dockerfile"]
+		},
+		{
+			"groupName": "docker-compose",
+			"matchManagers": ["docker-compose"]
+		},
+		{
+			"groupName": "gomod",
+			"matchManagers": ["gomod"],
+			"postUpdateOptions": ["gomodTidy", "gomodNoMassage"]
+		},
+		{
+			"groupName": "gomod",
+			"matchManagers": ["gomod"],
+			"matchDepTypes": ["toolchain"],
+			"enabled": false
+		}
+	]
+}
