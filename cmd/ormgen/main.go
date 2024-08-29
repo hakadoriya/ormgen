@@ -6,22 +6,18 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/hakadoriya/ormgen/internal/apperr"
 	"github.com/hakadoriya/ormgen/internal/config"
 	"github.com/hakadoriya/ormgen/internal/entrypoint"
+	"github.com/hakadoriya/ormgen/internal/logs"
 
-	"github.com/hakadoriya/z.go/buildinfoz"
 	"github.com/hakadoriya/z.go/cliz"
 	"github.com/hakadoriya/z.go/errorz"
-	"github.com/hakadoriya/z.go/logz/slogz"
 )
 
 func main() {
-	slog.SetDefault(slog.New(slogz.NewHandler(os.Stdout, slog.LevelDebug)))
-
 	exitCode, err := exec()
 	if err != nil {
-		apperr.Log.Error(fmt.Sprintf("exit %d", exitCode), slog.Any("error", err))
+		logs.Stderr.Error(fmt.Sprintf("exit %d", exitCode), slog.Any("error", err))
 	}
 	os.Exit(exitCode)
 }
@@ -53,7 +49,7 @@ func exec() (exitCode int, err error) {
 		}
 	*/
 
-	generateOpts, err := cliz.MarshalOptions(new(config.Generate))
+	generateOpts, err := cliz.MarshalOptions(new(config.GenerateConfig))
 	if err != nil {
 		return 1, errorz.Errorf("cliz.MarshalOptions: %w", err)
 	}
@@ -64,18 +60,16 @@ func exec() (exitCode int, err error) {
 		SubCommands: []*cliz.Command{
 			{
 				Name:            "generate",
-				Usage:           "generate <source>",
+				Usage:           "generate <SOURCE DIRECTORY>",
 				Description:     "Generate ORM from annotated code",
 				Options:         generateOpts,
-				PreHookExecFunc: config.Load,
+				PreHookExecFunc: config.GeneratePreHookExec,
 				ExecFunc:        entrypoint.Generate,
 			},
 			{
 				Name:        "version",
 				Description: "Show version information",
-				ExecFunc: func(c *cliz.Command, _ []string) error {
-					return buildinfoz.Fprint(c.Stdout())
-				},
+				ExecFunc:    entrypoint.Version,
 			},
 		},
 	}

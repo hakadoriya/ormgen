@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"log/slog"
+	"github.com/hakadoriya/ormgen/internal/logs"
 )
 
 func Abs(path string) string {
 	abs, err := filepath.Abs(path)
 	if err != nil {
-		slog.Default().Warn(fmt.Sprintf("failed to get absolute path. use path instead: path=%s: %v", path, err))
+		logs.Stdout.Warn(fmt.Sprintf("failed to get absolute path. use path instead: path=%s: %v", path, err))
 		return path
 	}
 	return abs

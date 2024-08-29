@@ -1,6 +1,10 @@
 package config
 
 import (
+	"log/slog"
+	"strings"
+
+	"github.com/hakadoriya/ormgen/internal/logs"
 	"github.com/hakadoriya/z.go/cliz"
 	"github.com/hakadoriya/z.go/contextz"
 	"github.com/hakadoriya/z.go/errorz"
@@ -10,8 +14,9 @@ const (
 	AppName = "ormgen"
 )
 
-type Generate struct {
+type GenerateConfig struct {
 	// Common
+	Trace    bool   `cli:"trace,   env=ORMGEN_TRACE,                      description=Enable trace mode"`
 	Debug    bool   `cli:"debug,   env=ORMGEN_DEBUG,                      description=Enable debug mode"`
 	Dialect  string `cli:"dialect, env=ORMGEN_DIALECT,  default=postgres, description=dialect for DML"`
 	Language string `cli:"lang,    env=ORMGEN_LANGUAGE, default=go,       description=programming language to generate ORM"`
@@ -31,10 +36,22 @@ type Generate struct {
 	GoORMStructName          string `cli:"go-orm-struct-name,                env=ORMGEN_GO_ORM_STRUCT_NAME,                default=_ORM,        description=struct name for ORM"`
 }
 
-func Load(c *cliz.Command, _ []string) (err error) {
-	cfg := new(Generate)
+func GeneratePreHookExec(c *cliz.Command, args []string) (err error) {
+	cfg := new(GenerateConfig)
 	if err := cliz.UnmarshalOptions(c, cfg); err != nil {
 		return errorz.Errorf("cliz.UnmarshalOptions: %w", err)
+	}
+
+	if cfg.Trace {
+		logs.Trace = logs.New(c.Stdout(), slog.LevelDebug)
+		cfg.Debug = true
+	}
+
+	if cfg.Debug {
+		logs.Stdout = logs.New(c.Stdout(), slog.LevelDebug)
+
+		cmd := c.GetExecutedCommandNames()
+		logs.Stdout.Debug(strings.Join(cmd, " ")+" "+strings.Join(args, " "), slog.Any("cmd", cmd), slog.Any("args", args), slog.Any("config", cfg))
 	}
 
 	c.SetContext(contextz.WithValue(c.Context(), cfg))
