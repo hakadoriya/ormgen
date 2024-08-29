@@ -1,0 +1,70 @@
+server:
+  http_listen_port: 3200
+  #log_level: info
+  #log_format: json
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+#ingester:
+#  #max_block_duration: 5m
+
+#compactor:
+#  compaction:
+#    #block_retention: 1h
+
+#memberlist:
+#  abort_if_cluster_join_fails: false
+#  bind_port: 7946
+#  join_members:
+#  - tempo1:7946
+#  - tempo2:7946
+#  - tempo3:7946
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: docker-compose
+  storage:
+    path: /var/tempo/generator/wal
+    # NOTE: Disable because the below error occurs:
+    #       level=ERROR source=write_handler.go:182 msg="Error while remote writing the v1 request" component=web err="native histograms are disabled"
+    #remote_write:
+    #  - url: ${PROMETHEUS_REMOTE_WRITE_ENDPOINT}/api/v1/write
+    #    send_exemplars: true
+  # ref: https://github.com/grafana/tempo/issues/3064#issuecomment-1781816935
+  traces_storage:
+    path: /tmp/tempo/generator/traces
+
+storage:
+  trace:
+    backend: s3
+    s3:
+      bucket: ${S3_BUCKET}
+      endpoint: ${S3_ENDPOINT}
+      access_key: ${S3_ACCESS_KEY}
+      secret_key: ${S3_SECRET_KEY}
+      insecure: true
+      #endpoint: s3.dualstack.us-west-2.amazonaws.com
+      #region: us-west-2
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+
+#querier:
+# frontend_worker:
+#   frontend_address: tempo:9095
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: ['service-graphs', 'span-metrics', 'local-blocks']
+      generate_native_histograms: both
