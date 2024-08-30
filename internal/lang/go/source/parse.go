@@ -45,6 +45,17 @@ func Parse(ctx context.Context, args []string) (PackageSourceSlice, error) {
 		return nil, errorz.Errorf("filepath.WalkDir: %w", err)
 	}
 
+	// DEBUG
+	for _, packageSource := range packageSources {
+		logs.Stdout.Debug("packageSource", slog.String("packageSource", fmt.Sprintf("%#v", packageSource)))
+		for _, fileSource := range packageSource.FileSources {
+			logs.Stdout.Debug("fileSource", slog.String("fileSource", fmt.Sprintf("%#v", fileSource)))
+			for _, structSource := range fileSource.StructSources {
+				logs.Stdout.Debug("structSource", slog.String("structSource", fmt.Sprintf("%#v", structSource)))
+			}
+		}
+	}
+
 	return packageSources, nil
 }
 

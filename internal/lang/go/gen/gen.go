@@ -3,8 +3,6 @@ package gen
 import (
 	"context"
 	"embed"
-	"fmt"
-	"log/slog"
 	"os"
 	"path"
 	"text/template"
@@ -12,7 +10,6 @@ import (
 	"github.com/hakadoriya/ormgen/internal/consts"
 	"github.com/hakadoriya/ormgen/internal/contexts"
 	"github.com/hakadoriya/ormgen/internal/lang/go/source"
-	"github.com/hakadoriya/ormgen/internal/logs"
 	"github.com/hakadoriya/z.go/errorz"
 	"github.com/hakadoriya/z.go/mustz"
 )
@@ -55,18 +52,6 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 			})
 
 			defer f.Close()
-		}
-	}
-
-	// DEBUG
-	logs.Stdout.Info("packageSources", slog.Any("packageSources", packageSources))
-	for _, packageSource := range packageSources {
-		logs.Stdout.Info("packageSource", slog.String("packageSource", fmt.Sprintf("%#v", packageSource)))
-		for _, fileSource := range packageSource.FileSources {
-			logs.Stdout.Info("fileSource", slog.String("fileSource", fmt.Sprintf("%#v", fileSource)))
-			for _, structSource := range fileSource.StructSources {
-				logs.Stdout.Info("structSource", slog.String("structSource", fmt.Sprintf("%#v", structSource)))
-			}
 		}
 	}
 

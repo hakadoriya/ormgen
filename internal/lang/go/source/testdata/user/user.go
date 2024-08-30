@@ -7,3 +7,5 @@ type User struct {
 	ID   int    `db:"id"  pk:"true"`
 	Name string `db:"name"`
 }
+
+type UserSlice []*User
