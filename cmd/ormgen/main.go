@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/hakadoriya/ormgen/internal/config"
+	"github.com/hakadoriya/ormgen/internal/consts"
 	"github.com/hakadoriya/ormgen/internal/entrypoint"
 	"github.com/hakadoriya/ormgen/internal/logs"
 
@@ -56,7 +57,7 @@ func exec() (exitCode int, err error) {
 
 	//nolint:exhaustruct
 	cmd := &cliz.Command{
-		Name: config.AppName,
+		Name: consts.AppName,
 		SubCommands: []*cliz.Command{
 			{
 				Name:            "generate",

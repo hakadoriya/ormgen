@@ -1,4 +1,4 @@
-package entrypoint
+package source
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func Test_walkDirFn(t *testing.T) {
 	t.Run("error,", func(t *testing.T) {
 		t.Parallel()
 
-		err := walkDirFn(context.Background())("", nil, io.EOF)
+		err := walkDirFn(context.Background(), "", nil)("", nil, io.EOF)
 		requirez.ErrorIs(t, err, io.EOF)
 	})
 }
