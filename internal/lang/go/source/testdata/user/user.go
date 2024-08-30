@@ -4,8 +4,8 @@ package user
 //
 //db:table user
 type User struct {
-	UserID   int    `db:"id"  pk:"true"`
-	Username string `db:"name"`
+	UserID   int    `db:"user_id"  pk:"true"`
+	Username string `db:"username"`
 	GroupID  int    `db:"group_id"`
 }
 
@@ -15,7 +15,7 @@ type UserSlice []*User
 //
 //db:table admin_user
 type AdminUser struct {
-	AdminUserID int    `db:"id"  pk:"true"`
-	Username    string `db:"name"`
+	AdminUserID int    `db:"admin_user_id"  pk:"true"`
+	Username    string `db:"username"`
 	GroupID     int    `db:"group_id"`
 }

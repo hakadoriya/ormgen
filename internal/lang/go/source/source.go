@@ -49,11 +49,11 @@ type FileSource struct {
 type StructSourceSlice []*StructSource
 
 type StructSource struct {
-	PackageName   string
-	TokenPosition token.Position
-	TypeSpec      *ast.TypeSpec
-	StructType    *ast.StructType
-	CommentGroup  *ast.CommentGroup
+	PackageName  string
+	Position     token.Position
+	TypeSpec     *ast.TypeSpec
+	StructType   *ast.StructType
+	CommentGroup *ast.CommentGroup
 }
 
 func (s *StructSource) CommentGroupString() string {
@@ -64,15 +64,15 @@ func (s *StructSource) CommentGroupString() string {
 	return builder.String()
 }
 
-var (
-	extractTableNameRegex = regexp.MustCompile(`^\s*(//+\s*|/\*\s*)?\S+\s*:\s*table(s)?\s*[: ]\s*(\S+.*)$`)
-	extractTableNameIndex = 3
-)
+// var (
+// 	extractTableNameRegex = regexp.MustCompile(`^\s*(//+\s*|/\*\s*)?\S+\s*:\s*table(s)?\s*[: ]\s*(\S+.*)$`)
+// 	extractTableNameIndex = 3
+// )
 
 func (s *StructSource) ExtractTableName(ctx context.Context) string {
 	for _, comment := range s.CommentGroup.List {
-		if matches := extractTableNameRegex.FindStringSubmatch(comment.Text); len(matches) > extractTableNameIndex {
-			return matches[extractTableNameIndex]
+		if matches := GoColumnTagCommentLineRegex(ctx).FindStringSubmatch(comment.Text); len(matches) > _GoColumnTagCommentLineRegexTagValueIndex {
+			return matches[_GoColumnTagCommentLineRegexTagValueIndex]
 		}
 	}
 	return ""
@@ -82,25 +82,26 @@ func (s *StructSource) GoString() string {
 	return fmt.Sprintf(
 		"&StructSource{PackageName: %#v, TokenPosition: %#v, TypeSpec: %#v, StructType: %#v, CommentGroup: %q}",
 		s.PackageName,
-		s.TokenPosition,
+		s.Position,
 		s.TypeSpec,
 		s.StructType,
 		s.CommentGroupString(),
 	)
 }
 
+const (
+	//	                                             _____________ <- 1. comment prefix
+	//	                                                             __ <- 2. tag key
+	//	                                                                                     ___ <- 5. comment suffix
+	_GoColumnTagCommentLineRegexFormat        = `^\s*(//+\s*|/\*\s*)?(%s)\s*:\s*(\S*)\s*(\S*)(\*/)?`
+	_GoColumnTagCommentLineRegexTagNameIndex  = /*                               ^^^ 3. tag name */ 3
+	_GoColumnTagCommentLineRegexTagValueIndex = /*                                       ^^^ 4. tag value */ 4
+)
+
 //nolint:gochecknoglobals
 var (
 	_GoColumnTagCommentLineRegex     *regexp.Regexp
 	_GoColumnTagCommentLineRegexOnce sync.Once
-)
-
-const (
-	//	                                             _____________ <- 1. comment prefix
-	//	                                                             __ <- 2. tag name
-	//	                                                                               ___ <- 4. comment suffix
-	_GoColumnTagCommentLineRegexFormat       = `^\s*(//+\s*|/\*\s*)?(%s)\s*:\s*(.*)\s*(\*/)?`
-	_GoColumnTagCommentLineRegexContentIndex = /*                               ^^ 3. tag value */ 3
 )
 
 func GoColumnTagCommentLineRegex(ctx context.Context) *regexp.Regexp {

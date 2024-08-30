@@ -8,12 +8,33 @@ import (
 
 	{{ .PackageImportPath | Base }} "{{ .PackageImportPath }}"
 )
-{{ range .Structs }}
-const Create{{ .StructName }}Query = `INSERT INTO {{ .TableName }} ({{- range $i, $v := .ColumnsNames }}{{ if $i }}, {{ end }}{{ $v }}{{- end }}) VALUES ({{- range $i, $v := .ColumnsNames }}{{ if $i }}, {{ end }}{{ PlaceHolder $i $v }}{{- end }})`
+{{ range $i, $table := .Tables }}
+const Create{{ $table.StructName }}Query = `INSERT INTO {{ $table.TableName }} ({{- range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) VALUES ({{ PlaceHolder $table.Columns 1 }})`
 
-func (s *{{ $.PackageName | UpperFirst }}) Create{{ .StructName }}(ctx context.Context, queryer QueryerContext, {{ .TableName }} *{{ $.PackageImportPath | Base }}.{{ .StructName }}) error {
+func (s *{{ $.PackageName | UpperFirst }}) Create{{ $table.StructName }}(ctx context.Context, queryerContext QueryerContext, {{ $table.TableName }} *{{ $.PackageImportPath | Base }}.{{ $table.StructName }}) error {
 	LoggerFromContext(ctx).Debug(Create{{ .StructName }}Query)
-	_, err := r.db.ExecContext(ctx, Create{{ .StructName }}Query, {{ range $i, $v := .FieldsNames }}{{ if $i }}, {{ end }}{{ $.PackageImportPath | Base }}.{{ $v }}{{- end }})
-	return err
+	_, err := queryerContext.ExecContext(ctx, Create{{ $table.StructName }}Query, {{ range $i, $column := .Columns }}{{ if $i }}, {{ end }}{{ $.PackageImportPath | Base }}.{{ $column.FieldName }}{{- end }})
+	err = s.HandleError(err)
+	if err != nil {
+		return fmt.Errorf("queryerContext.ExecContext: %w", err)
+	}
+	return nil
 }
+
+const Get{{ .StructName }}ByPKQuery = `SELECT {{ range $i, $v := .Columns }}{{ if $i }}, {{ end }}{{ $v.ColumnName }}{{- end }} FROM {{ .TableName }} WHERE {{ PlaceHolderInWhere .PrimaryKeys "AND" 1 }}`
+
+func (s *{{ $.PackageName | UpperFirst }}) Get{{ .StructName }}ByPK(ctx context.Context, queryerContext QueryerContext, {{ range $i, $v := .PrimaryKeys }}{{ if $i }}, {{ end }}{{ $v.ColumnName }} {{ $v.FieldType }}{{ end }}) (*{{ $.PackageImportPath | Base }}.{{ .StructName }}, error) {
+	LoggerFromContext(ctx).Debug(Get{{ .StructName }}ByPKQuery)
+	row := queryerContext.QueryRowContext(ctx, Get{{ .StructName }}ByPKQuery, {{ range $i, $v := .PrimaryKeys }}{{ if $i }}, {{ end }}{{ $v.FieldName }}{{ end }})
+	{{ .TableName }} := new({{ $.PackageImportPath | Base }}.{{ .StructName }})
+	err := row.Scan({{ range $i, $v := .Columns }}{{ if $i }}, {{ end }}&{{ $table.TableName }}.{{ $v.FieldName }}{{- end }})
+	if err != nil {
+		return nil, fmt.Errorf("row.Scan: %w", err)
+	}
+	return {{ .TableName }}, nil
+}
+
+{{ range $table.HasOneTagsKeys }}
+const Get{{ $table.StructName }}By{{ .FieldName }}Query = `SELECT {{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}{{ $v.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ .ColumnName }} = ?`
+{{ end }}
 {{ end -}}
