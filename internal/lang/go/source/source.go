@@ -64,6 +64,20 @@ func (s *StructSource) CommentGroupString() string {
 	return builder.String()
 }
 
+var (
+	extractTableNameRegex = regexp.MustCompile(`^\s*(//+\s*|/\*\s*)?\S+\s*:\s*table(s)?\s*[: ]\s*(\S+.*)$`)
+	extractTableNameIndex = 3
+)
+
+func (s *StructSource) ExtractTableName(ctx context.Context) string {
+	for _, comment := range s.CommentGroup.List {
+		if matches := extractTableNameRegex.FindStringSubmatch(comment.Text); len(matches) > extractTableNameIndex {
+			return matches[extractTableNameIndex]
+		}
+	}
+	return ""
+}
+
 func (s *StructSource) GoString() string {
 	return fmt.Sprintf(
 		"&StructSource{PackageName: %#v, TokenPosition: %#v, TypeSpec: %#v, StructType: %#v, CommentGroup: %q}",
