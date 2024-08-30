@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"go/build"
 	"path/filepath"
-
-	"github.com/hakadoriya/ormgen/internal/apperr"
 )
 
 func DetectPackageImportPath(path string) (string, error) {
@@ -20,8 +18,13 @@ func DetectPackageImportPath(path string) (string, error) {
 	}
 
 	if pkg.ImportPath == "." {
-		// If ImportPath is ".", it means the directory is not in GOPATH or inside a module
-		return "", fmt.Errorf("path=%s: pkg=%#v: %w", absDir, *pkg, apperr.ErrFailedToDetectPackageImportPath)
+		// If ImportPath is ".", find the parent package recursively.
+		parent, err := DetectPackageImportPath(filepath.Dir(absDir))
+		if err != nil {
+			return "", fmt.Errorf("DetectPackageImportPath: %w", err)
+		}
+
+		return filepath.Join(parent, filepath.Base(absDir)), nil
 	}
 
 	return pkg.ImportPath, nil

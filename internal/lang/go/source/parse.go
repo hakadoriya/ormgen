@@ -14,50 +14,38 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/hakadoriya/ormgen/internal/apperr"
 	"github.com/hakadoriya/ormgen/internal/contexts"
 	"github.com/hakadoriya/ormgen/internal/logs"
 	"github.com/hakadoriya/ormgen/internal/util"
+	"github.com/hakadoriya/ormgen/pkg/apperr"
 	"github.com/hakadoriya/z.go/contextz"
 	"github.com/hakadoriya/z.go/errorz"
 	"github.com/hakadoriya/z.go/pathz/filepathz"
 )
 
-func Parse(ctx context.Context, args []string) error {
+func Parse(ctx context.Context, args []string) (PackageSourceSlice, error) {
 	if len(args) != 1 {
 		logs.Stderr.ErrorContext(ctx, fmt.Sprintf("invalid number of arguments; expected 1, got %d", len(args)), slog.Any("args", args))
-		return errorz.Errorf("invalid number of arguments; expected 1, got %d: %w", len(args), apperr.ErrInvalidArguments)
+		return nil, errorz.Errorf("invalid number of arguments; expected 1, got %d: %w", len(args), apperr.ErrInvalidArguments)
 	}
 
 	sourcePath := util.Abs(args[0])
 
 	sourceInfo, err := os.Stat(sourcePath)
 	if err != nil {
-		return errorz.Errorf("os.Stat: %w", sourcePath, err)
+		return nil, errorz.Errorf("os.Stat: %w", sourcePath, err)
 	}
 
 	if !sourceInfo.IsDir() {
-		return errorz.Errorf("sourceInfo.IsDir: sourcePath=%s: %w", sourcePath, apperr.ErrSourcePathIsNotDirectory)
+		return nil, errorz.Errorf("sourceInfo.IsDir: sourcePath=%s: %w", sourcePath, apperr.ErrSourcePathIsNotDirectory)
 	}
 
 	var packageSources PackageSourceSlice
 	if err := filepath.WalkDir(sourcePath, walkDirFn(ctx, sourcePath, &packageSources)); err != nil {
-		return errorz.Errorf("filepath.WalkDir: %w", err)
+		return nil, errorz.Errorf("filepath.WalkDir: %w", err)
 	}
 
-	// DEBUG
-	logs.Stdout.Info("packageSources", slog.Any("packageSources", packageSources))
-	for _, packageSource := range packageSources {
-		logs.Stdout.Info("packageSource", slog.String("packageSource", fmt.Sprintf("%#v", packageSource)))
-		for _, fileSource := range packageSource.FileSources {
-			logs.Stdout.Info("fileSource", slog.String("fileSource", fmt.Sprintf("%#v", fileSource)))
-			for _, structSource := range fileSource.StructSources {
-				logs.Stdout.Info("structSource", slog.String("structSource", fmt.Sprintf("%#v", structSource)))
-			}
-		}
-	}
-
-	return nil
+	return packageSources, nil
 }
 
 var fileExt = ".go"
@@ -114,7 +102,7 @@ func parseFile(ctx context.Context, sourcePath, filePath string) (*FileSource, e
 	rootNode, err := parser.ParseFile(fset, filePath, nil, parser.ParseComments)
 	if err != nil {
 		// MEMO: parser.ParseFile err contains file path, so no need to log it
-		return nil, errorz.Errorf("parser.ParseFile: %w", err)
+		return nil, errorz.Errorf("parser.ParseFile=%w: %w", err, apperr.ErrNoStructSourceFound)
 	}
 
 	sourceRelativePath, err := filepath.Rel(sourcePath, filePath)
