@@ -30,6 +30,7 @@ func (pss *PackageSourceSlice) AddPackageSource(packageSource *PackageSource) {
 type PackageSource struct {
 	PackageName        string
 	PackageImportPath  string
+	DirPath            string
 	SourceRelativePath string
 
 	FileSources FileSourceSlice
@@ -38,10 +39,11 @@ type PackageSource struct {
 type FileSourceSlice []*FileSource
 
 type FileSource struct {
-	FilePath           string
 	PackageName        string
+	FilePath           string
 	SourceRelativePath string
-	StructSources      StructSourceSlice
+
+	StructSources StructSourceSlice
 }
 
 type StructSourceSlice []*StructSource

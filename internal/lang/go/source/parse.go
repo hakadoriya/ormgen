@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -62,24 +63,24 @@ func Parse(ctx context.Context, args []string) (PackageSourceSlice, error) {
 var fileExt = ".go"
 
 func walkDirFn(ctx context.Context, sourcePath string, packageSources *PackageSourceSlice) func(path string, d fs.DirEntry, err error) error {
-	return func(path string, d fs.DirEntry, err error) error {
+	return func(filePath string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return errorz.Errorf("path=%s: %w", path, err)
+			return errorz.Errorf("path=%s: %w", filePath, err)
 		}
 
 		if err := contextz.CheckContext(ctx); err != nil {
 			return errorz.Errorf("contextz.CheckContext: %w", err)
 		}
 
-		if d.IsDir() || !strings.HasSuffix(path, fileExt) || strings.HasSuffix(path, "_test.go") {
-			logs.Trace.Debug(fmt.Sprintf("skip: path=%s", path))
+		if d.IsDir() || !strings.HasSuffix(filePath, fileExt) || strings.HasSuffix(filePath, "_test.go") {
+			logs.Trace.Debug(fmt.Sprintf("skip: path=%s", filePath))
 			return nil
 		}
 
-		fileSource, err := parseFile(ctx, sourcePath, path)
+		fileSource, err := parseFile(ctx, sourcePath, filePath)
 		if err != nil {
 			if errors.Is(err, apperr.ErrNoStructSourceFound) {
-				logs.Trace.Debug(fmt.Sprintf("skip: path=%s: %v", path, err))
+				logs.Trace.Debug(fmt.Sprintf("skip: path=%s: %v", filePath, err))
 				return nil
 			}
 			return errorz.Errorf("parseFile: %w", err)
@@ -96,7 +97,8 @@ func walkDirFn(ctx context.Context, sourcePath string, packageSources *PackageSo
 
 		packageSources.AddPackageSource(&PackageSource{
 			PackageName:        fileSource.PackageName,
-			PackageImportPath:  packageImportPath,
+			DirPath:            filepath.Dir(fileSource.FilePath),
+			PackageImportPath:  path.Join(packageImportPath, filepath.Dir(fileSource.SourceRelativePath)),
 			SourceRelativePath: filepath.Dir(fileSource.SourceRelativePath),
 			FileSources:        FileSourceSlice{fileSource},
 		})

@@ -15,12 +15,12 @@ import (
 )
 
 const (
-	fileGoTmplName = "file.go.tmpl"
+	eachGoTmplName = "each.go.tmpl"
 )
 
 var (
-	//go:embed file.go.tmpl
-	fileGoTmpl embed.FS
+	//go:embed each.go.tmpl
+	eachGoTmpl embed.FS
 )
 
 func Output(ctx context.Context, packageSources source.PackageSourceSlice) error {
@@ -43,12 +43,14 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 				return errorz.Errorf("os.Create: %w", err)
 			}
 
-			template.Must(template.New("orm").Parse(string(mustz.One(fileGoTmpl.ReadFile(fileGoTmplName))))).Execute(f, struct {
-				SourceFile  string
-				PackageName string
+			template.Must(template.New("orm").Parse(string(mustz.One(eachGoTmpl.ReadFile(eachGoTmplName))))).Execute(f, struct {
+				SourceFile        string
+				PackageName       string
+				PackageImportPath string
 			}{
-				SourceFile:  fileSource.SourceRelativePath,
-				PackageName: packageSource.PackageName,
+				SourceFile:        fileSource.SourceRelativePath,
+				PackageName:       packageSource.PackageName,
+				PackageImportPath: packageSource.PackageImportPath,
 			})
 
 			defer f.Close()
