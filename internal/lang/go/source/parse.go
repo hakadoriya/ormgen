@@ -131,7 +131,7 @@ func parseFile(ctx context.Context, sourcePath, filePath string) (*FileSource, e
 			for _, commentLine := range commentGroup.List {
 				logs.Trace.Debug(fmt.Sprintf("comment=%s: %s", filepathz.ExtractShortPath(fset.Position(commentGroup.Pos()).String()), commentLine.Text))
 				// NOTE: If the comment line matches the GoColumnTag, it is assumed to be a comment line for the struct.
-				if matches := GoColumnTagCommentLineRegex(ctx).FindStringSubmatch(commentLine.Text); len(matches) > _GoColumnTagCommentLineRegexContentIndex {
+				if matches := GoColumnTagCommentLineRegex(ctx).FindStringSubmatch(commentLine.Text); len(matches) > _GoColumnTagCommentLineRegexTagNameIndex {
 					ast.Inspect(commentedNode, func(node ast.Node) bool {
 						switch nod := node.(type) {
 						case *ast.TypeSpec:
@@ -143,11 +143,11 @@ func parseFile(ctx context.Context, sourcePath, filePath string) (*FileSource, e
 									position := fset.Position(structType.Pos())
 									logs.Stdout.Debug(fmt.Sprintf("found struct source:%s: overwrite with comment group: type=%s", position.String(), typeSpec.Name.Name))
 									structSources = append(structSources, &StructSource{
-										PackageName:   rootNode.Name.Name,
-										TokenPosition: position,
-										TypeSpec:      typeSpec,
-										StructType:    structType,
-										CommentGroup:  commentGroup,
+										PackageName:  rootNode.Name.Name,
+										Position:     position,
+										TypeSpec:     typeSpec,
+										StructType:   structType,
+										CommentGroup: commentGroup,
 									})
 								}
 								return false

@@ -6,8 +6,8 @@ import (
 	"go/ast"
 	"os"
 	"path"
-	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -32,15 +32,8 @@ type EachGoTmpl struct {
 	SourceFile        string
 	PackageName       string
 	PackageImportPath string
-	Structs           []Struct
-}
-
-type Struct struct {
-	StructName   string
-	TableName    string
-	FieldsNames  []string
-	FieldsTypes  []string
-	ColumnsNames []string
+	SliceTypeSuffix   string
+	Tables            []*TableInfo
 }
 
 func fieldName(x ast.Expr) *ast.Ident {
@@ -77,43 +70,62 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 				return errorz.Errorf("os.Create: %w", err)
 			}
 
-			var structs []Struct
+			var tables []*TableInfo
 			for _, structSource := range fileSource.StructSources {
-				tableName := structSource.ExtractTableName(ctx)
-				var fields []string
-				var FieldsTypes []string
-				var columns []string
-				for _, field := range structSource.StructType.Fields.List {
-					fields = append(fields, field.Names[0].Name)
-					FieldsTypes = append(FieldsTypes, fieldName(field.Type).String())
-					columns = append(columns, reflect.StructTag(strings.Trim(field.Tag.Value, "`")).Get(cfg.GoColumnTag))
-				}
-				structs = append(structs, Struct{
-					StructName:   structSource.TypeSpec.Name.Name,
-					TableName:    tableName,
-					FieldsNames:  fields,
-					ColumnsNames: columns,
-				})
+				tables = append(tables, BuildTableInfo(ctx, structSource))
 			}
 
-			template.Must(template.New("orm").Funcs(template.FuncMap{
+			sort.Slice(tables, func(i, j int) bool { return tables[i].SortKey < tables[j].SortKey })
+
+			if err := template.Must(template.New("orm").Funcs(template.FuncMap{
 				"add":        func(a, b int) int { return a + b },
+				"sub":        func(a, b int) int { return a - b },
 				"UpperFirst": func(s string) string { return strings.ToUpper(string(s[0])) + s[1:] },
 				"LowerFirst": func(s string) string { return strings.ToLower(string(s[0])) + s[1:] },
 				"Base":       path.Base,
-				"PlaceHolder": func(i int, column string) string {
-					switch cfg.Dialect {
-					case consts.DialectPostgres:
-						return "$" + strconv.Itoa(i)
+				"PlaceHolder": func(columns []*ColumnInfo, startIndex int) string {
+					var builder strings.Builder
+					for i := range columns {
+						if i != 0 {
+							builder.WriteString(", ")
+						}
+						switch cfg.Dialect {
+						case consts.DialectPostgres:
+							builder.WriteString("$")
+							builder.WriteString(strconv.Itoa(i + startIndex))
+						default:
+							builder.WriteString("?")
+						}
 					}
-					return "?"
+					return builder.String()
+				},
+				"PlaceHolderInWhere": func(columns []*ColumnInfo, op string, startIndex int) string {
+					var builder strings.Builder
+					for i := range columns {
+						if i != 0 {
+							builder.WriteString(" " + op + " ")
+						}
+						builder.WriteString(columns[i].ColumnName)
+						builder.WriteString(" = ")
+						switch cfg.Dialect {
+						case consts.DialectPostgres:
+							builder.WriteString("$")
+							builder.WriteString(strconv.Itoa(i + startIndex))
+						default:
+							builder.WriteString("?")
+						}
+					}
+					return builder.String()
 				},
 			}).Parse(string(mustz.One(eachGoTmpl.ReadFile(eachGoTmplName))))).Execute(f, EachGoTmpl{
 				SourceFile:        fileSource.SourceRelativePath,
 				PackageName:       packageSource.PackageName,
 				PackageImportPath: packageSource.PackageImportPath,
-				Structs:           structs,
-			})
+				SliceTypeSuffix:   cfg.GoSliceTypeSuffix,
+				Tables:            tables,
+			}); err != nil {
+				return errorz.Errorf("template.Execute: %w", err)
+			}
 
 			defer f.Close()
 		}
