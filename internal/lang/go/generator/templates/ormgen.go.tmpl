@@ -11,7 +11,7 @@ import (
 )
 
 type ORM interface {
-	{{- range $i, $table := .Tables }}
+	{{- range $i, $table := $.Tables }}
 	Create{{ $table.StructName }}(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error
 	Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error)
 	{{- range $i, $hasOneTagsKey := $table.HasOneTagsKeys -}}

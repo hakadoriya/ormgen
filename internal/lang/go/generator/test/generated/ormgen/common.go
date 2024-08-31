@@ -53,7 +53,7 @@ type QueryConfig struct {
 	limit                int
 }
 
-var PlaceHolderGenGenMap = map[string]PlaceholderGenerator{
+var PlaceholderGeneratorMap = map[string]PlaceholderGenerator{
 	"":          func(_ int) string { panic("empty dialect") },
 	"postgres":  postgrePlaceholderGenerator,
 	"cockroach": postgrePlaceholderGenerator,
@@ -105,6 +105,7 @@ func (c *QueryConfig) ToSQL(query string, placeholderStartAt int) (string, []int
 	}
 	if c.limit > 0 {
 		q += " LIMIT " + c.placeholderGenerator(placeholderStartAt)
+		args = append(args, c.limit)
 	}
 	return q, args
 }
@@ -290,9 +291,10 @@ type conditionEqual struct {
 }
 
 func (c *conditionEqual) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " = " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " = " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -312,9 +314,10 @@ type conditionNotEqual struct {
 }
 
 func (c *conditionNotEqual) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " <> " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " <> " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -339,9 +342,9 @@ func (c *conditionIn) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, p
 		if i != 0 {
 			s += ", "
 		}
+		s += placeHolderGen(*placeholderStartAt)
 		*placeholderStartAt++
 		*queryArgs = append(*queryArgs, v)
-		s += placeHolderGen(*placeholderStartAt)
 	}
 	s += ")"
 	return s
@@ -369,9 +372,9 @@ func (c *conditionNotIn) toSQL(placeholderStartAt *int, queryArgs *[]interface{}
 		if i != 0 {
 			s += ", "
 		}
+		s += placeHolderGen(*placeholderStartAt)
 		*placeholderStartAt++
 		*queryArgs = append(*queryArgs, v)
-		s += placeHolderGen(*placeholderStartAt)
 	}
 	s += ")"
 	return s
@@ -394,9 +397,10 @@ type conditionGreaterThan struct {
 }
 
 func (c *conditionGreaterThan) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " > " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " > " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -416,9 +420,10 @@ type conditionGreaterThanOrEqual struct {
 }
 
 func (c *conditionGreaterThanOrEqual) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " >= " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " >= " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -438,9 +443,10 @@ type conditionLessThan struct {
 }
 
 func (c *conditionLessThan) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " < " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " < " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -460,9 +466,10 @@ type conditionLessThanOrEqual struct {
 }
 
 func (c *conditionLessThanOrEqual) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " <= " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " <= " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -482,9 +489,10 @@ type conditionLike struct {
 }
 
 func (c *conditionLike) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " LIKE " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " LIKE " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -504,9 +512,10 @@ type conditionNotLike struct {
 }
 
 func (c *conditionNotLike) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
+	s := c.Column + " NOT LIKE " + placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value)
-	return c.Column + " NOT LIKE " + placeHolderGen(*placeholderStartAt)
+	return s
 }
 
 // ===============================================================
@@ -565,13 +574,13 @@ type conditionBetween struct {
 
 func (c *conditionBetween) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
 	s := c.Column + " BETWEEN "
+	s += placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value1)
-	s += placeHolderGen(*placeholderStartAt)
 	s += " AND "
+	s += placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value2)
-	s += placeHolderGen(*placeholderStartAt)
 	return s
 }
 
@@ -595,12 +604,12 @@ type conditionNotBetween struct {
 
 func (c *conditionNotBetween) toSQL(placeholderStartAt *int, queryArgs *[]interface{}, placeHolderGen PlaceholderGenerator) string {
 	s := c.Column + " NOT BETWEEN "
+	s += placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value1)
-	s += placeHolderGen(*placeholderStartAt)
 	s += " AND "
+	s += placeHolderGen(*placeholderStartAt)
 	*placeholderStartAt++
 	*queryArgs = append(*queryArgs, c.Value2)
-	s += placeHolderGen(*placeholderStartAt)
 	return s
 }

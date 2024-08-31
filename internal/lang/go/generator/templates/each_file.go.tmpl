@@ -55,7 +55,7 @@ const List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range
 
 func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $commonPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $commonPackageImportPath }}.QueryConfig)
-	{{ $commonPackageImportPath }}.WithPlaceholderGenerator({{ $commonPackageImportPath }}.PlaceHolderGenGenMap["{{ $.Dialect }}"]).ApplyResultOption(config)
+	{{ $commonPackageImportPath }}.WithPlaceholderGenerator({{ $commonPackageImportPath }}.PlaceholderGeneratorMap["{{ $.Dialect }}"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyResultOption(config)
 	}
@@ -87,7 +87,7 @@ const List{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.
 
 func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, opts ...{{ $commonPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $commonPackageImportPath }}.QueryConfig)
-	{{ $commonPackageImportPath }}.WithPlaceholderGenerator({{ $commonPackageImportPath }}.PlaceHolderGenGenMap["{{ $.Dialect }}"]).ApplyResultOption(config)
+	{{ $commonPackageImportPath }}.WithPlaceholderGenerator({{ $commonPackageImportPath }}.PlaceholderGeneratorMap["{{ $.Dialect }}"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}

@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
 	gourp_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/gourp"
 )
 
@@ -39,7 +39,7 @@ const ListGroupQuery = `SELECT id, name FROM group`
 
 func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormgen.QueryerContext, opts ...ormgen.QueryOption) (gourp_.GroupSlice, error) {
 	config := new(ormgen.QueryConfig)
-	ormgen.WithPlaceholderGenerator(ormgen.PlaceHolderGenGenMap["postgres"]).ApplyResultOption(config)
+	ormgen.WithPlaceholderGenerator(ormgen.PlaceholderGeneratorMap["postgres"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}

@@ -6,7 +6,7 @@ package user
 import (
 	"context"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
 	user_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/user"
 )
 

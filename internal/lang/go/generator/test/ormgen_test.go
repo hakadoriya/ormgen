@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/hakadoriya/ormgen/internal/lang/go/generator/test/ormgen"
-	"github.com/hakadoriya/ormgen/internal/lang/go/generator/test/user"
+	"github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
+	"github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/user"
 )
 
 type (

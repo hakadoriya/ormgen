@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
 	user_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/user"
 )
 
@@ -52,7 +52,7 @@ const ListUserByUsernameAndAddressQuery = `SELECT user_id, username, address, gr
 
 func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormgen.QueryerContext, username string, address string, opts ...ormgen.ResultOption) (user_.UserSlice, error) {
 	config := new(ormgen.QueryConfig)
-	ormgen.WithPlaceholderGenerator(ormgen.PlaceHolderGenGenMap["postgres"]).ApplyResultOption(config)
+	ormgen.WithPlaceholderGenerator(ormgen.PlaceholderGeneratorMap["postgres"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyResultOption(config)
 	}
@@ -84,7 +84,7 @@ const ListUserQuery = `SELECT user_id, username, address, group_id FROM user`
 
 func (s *_ORM) ListUser(ctx context.Context, queryerContext ormgen.QueryerContext, opts ...ormgen.QueryOption) (user_.UserSlice, error) {
 	config := new(ormgen.QueryConfig)
-	ormgen.WithPlaceholderGenerator(ormgen.PlaceHolderGenGenMap["postgres"]).ApplyResultOption(config)
+	ormgen.WithPlaceholderGenerator(ormgen.PlaceholderGeneratorMap["postgres"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}
@@ -151,7 +151,7 @@ const ListAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_
 
 func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormgen.QueryerContext, opts ...ormgen.QueryOption) (user_.AdminUserSlice, error) {
 	config := new(ormgen.QueryConfig)
-	ormgen.WithPlaceholderGenerator(ormgen.PlaceHolderGenGenMap["postgres"]).ApplyResultOption(config)
+	ormgen.WithPlaceholderGenerator(ormgen.PlaceholderGeneratorMap["postgres"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}
