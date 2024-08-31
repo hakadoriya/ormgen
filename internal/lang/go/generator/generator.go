@@ -25,7 +25,7 @@ import (
 
 const (
 	eachFileTmpl    = "templates/each_file.go.tmpl"
-	eachPackageTmpl = "templates/each_package.go.tmpl"
+	eachPackageTmpl = "templates/ormgen.go.tmpl"
 	commonTmpl      = "templates/common.go"
 )
 
@@ -45,6 +45,7 @@ type FileInfo struct {
 	PackageName             string
 	PackageImportPath       string
 	CommonPackageImportPath string
+	Dialect                 string
 	SliceTypeSuffix         string
 	Tables                  []*TableInfo
 }
@@ -169,6 +170,7 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 				PackageName:             packageSource.PackageName,
 				PackageImportPath:       packageSource.PackageImportPath,
 				CommonPackageImportPath: commonPackageImportPath,
+				Dialect:                 cfg.Dialect,
 				SliceTypeSuffix:         cfg.GoSliceTypeSuffix,
 				Tables:                  tables,
 			}); err != nil {
@@ -178,7 +180,7 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 			defer eachFile.Close()
 		}
 
-		eachPackageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, "ormgen.go")
+		eachPackageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, strings.TrimSuffix(filepath.Base(eachPackageTmpl), ".tmpl"))
 		eachPackageFile, err := os.Create(eachPackageFilePath)
 		if err != nil {
 			return errorz.Errorf("os.Create: %w", err)

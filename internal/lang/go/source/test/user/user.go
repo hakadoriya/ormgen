@@ -20,3 +20,5 @@ type AdminUser struct {
 	Username    string `db:"username"`
 	GroupID     int    `db:"group_id"`
 }
+
+type AdminUserSlice []*AdminUser
