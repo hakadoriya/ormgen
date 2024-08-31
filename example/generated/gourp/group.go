@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
-	gourp_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/gourp"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	gourp_ "github.com/hakadoriya/ormgen/example/model/gourp"
 )
 
 const CreateGroupQuery = `INSERT INTO group (id, name) VALUES ($1, $2)`

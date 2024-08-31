@@ -6,8 +6,8 @@ package group
 import (
 	"context"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
-	gourp_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/gourp"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	gourp_ "github.com/hakadoriya/ormgen/example/model/gourp"
 )
 
 type ORM interface {

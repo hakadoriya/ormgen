@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
-	user_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/user"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	user_ "github.com/hakadoriya/ormgen/example/model/user"
 )
 
 const CreateUserQuery = `INSERT INTO user (user_id, username, address, group_id) VALUES ($1, $2, $3, $4)`

@@ -25,4 +25,3 @@ Thumbs.db
 coverage.txt*
 coverage.html*
 go.work.sum
-/example

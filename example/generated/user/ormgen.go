@@ -6,8 +6,8 @@ package user
 import (
 	"context"
 
-	ormgen "github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
-	user_ "github.com/hakadoriya/ormgen/internal/lang/go/source/test/user"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	user_ "github.com/hakadoriya/ormgen/example/model/user"
 )
 
 type ORM interface {

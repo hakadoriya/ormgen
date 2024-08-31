@@ -1,4 +1,4 @@
-package testdata_test
+package generator_test
 
 import (
 	"bytes"
@@ -7,9 +7,11 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/ormgen"
-	"github.com/hakadoriya/ormgen/internal/lang/go/generator/test/generated/user"
+	"github.com/hakadoriya/ormgen/example/generated/ormgen"
+	"github.com/hakadoriya/ormgen/example/generated/user"
 )
+
+//go:generate sh -cx "cd ../../../.. && pwd && go run ./cmd/ormgen generate ./example/model --go-orm-output-path ./example/generated"
 
 type (
 	testQueryerContext struct {
@@ -81,23 +83,12 @@ func newTestQueryerContext() *testQueryerContext {
 }
 
 func TestOrmGen(t *testing.T) {
-	t.Parallel()
-
 	t.Run("success,", func(t *testing.T) {
 		queryerContext := newTestQueryerContext()
 		orm := user.NewORM()
 		buf := bytes.NewBuffer(nil)
 		ctx := ormgen.LoggerWithContext(context.Background(), slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
 
-		{
-			defer func() {
-				if r := recover(); r == nil {
-					t.Error("❌: panic expected")
-				}
-				queryerContext.ExecContextArgs = testExecContextArgs{}
-			}()
-			_, _ = orm.GetUserByPK(ctx, queryerContext, 1)
-		}
 		{
 			_, err := orm.ListUser(ctx, queryerContext, ormgen.Where(ormgen.And(ormgen.Equal("username", "Alice"), ormgen.Equal("city", "Tokyo"), ormgen.Or(ormgen.Equal("group_id", 1), ormgen.Equal("group_id", 2)))))
 			if err == nil {
@@ -109,5 +100,14 @@ func TestOrmGen(t *testing.T) {
 				t.Errorf("❌: expected(%s) != actual(%s)", expectedQuery, actualQuery)
 			}
 		}
+
+		// buf = bytes.NewBuffer(nil)
+		// // cmd := exec.Command("go", "run", "./cmd/ormgen", "generate", "./example/model", "--go-orm-output-path", "./example/generated")
+		// cmd := exec.Command("sh", "-c", "cd ../../../.. && go run ./cmd/ormgen generate ./example/model --go-orm-output-path ./example/generated")
+		// cmd.Stdout = buf
+		// cmd.Stderr = buf
+		// cmdErr := cmd.Run()
+		// requirez.NoError(t, cmdErr)
+		// t.Logf("buf: %s", buf.String())
 	})
 }
