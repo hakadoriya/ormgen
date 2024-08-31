@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"bytes"
 	"context"
 	"embed"
 	"go/ast"
@@ -19,6 +18,7 @@ import (
 	"github.com/hakadoriya/ormgen/internal/consts"
 	"github.com/hakadoriya/ormgen/internal/contexts"
 	"github.com/hakadoriya/ormgen/internal/lang/go/source"
+	"github.com/hakadoriya/ormgen/internal/util"
 	"github.com/hakadoriya/z.go/errorz"
 	"github.com/hakadoriya/z.go/mustz"
 )
@@ -26,7 +26,7 @@ import (
 const (
 	eachFileTmpl    = "templates/each_file.go.tmpl"
 	eachPackageTmpl = "templates/each_package.go.tmpl"
-	queryOptionTmpl = "templates/query_option.go"
+	commonTmpl      = "templates/common.go"
 )
 
 var (
@@ -41,11 +41,12 @@ var (
 )
 
 type FileInfo struct {
-	SourceFile        string
-	PackageName       string
-	PackageImportPath string
-	SliceTypeSuffix   string
-	Tables            []*TableInfo
+	SourceFile              string
+	PackageName             string
+	PackageImportPath       string
+	CommonPackageImportPath string
+	SliceTypeSuffix         string
+	Tables                  []*TableInfo
 }
 
 func fieldName(x ast.Expr) *ast.Ident {
@@ -109,8 +110,30 @@ func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
 func Output(ctx context.Context, packageSources source.PackageSourceSlice) error {
 	cfg := contexts.GenerateConfig(ctx)
 
-	if err := os.MkdirAll(cfg.GoORMOutputPath, consts.Perm0o775); err != nil {
+	commonDirPath := path.Join(cfg.GoORMOutputPath, "ormgen")
+	if err := os.MkdirAll(commonDirPath, consts.Perm0o775); err != nil {
 		return errorz.Errorf("os.MkdirAll: %w", err)
+	}
+
+	commonPackageImportPath, err := util.DetectPackageImportPath(commonDirPath)
+	if err != nil {
+		return errorz.Errorf("util.DetectPackageImportPath: %w", err)
+	}
+
+	commonFilePath := path.Join(commonDirPath, filepath.Base(commonTmpl))
+	commonFile, err := os.Create(commonFilePath)
+	if err != nil {
+		return errorz.Errorf("os.Create: %w", err)
+	}
+	defer commonFile.Close()
+
+	r, err := templates.ReadFile(commonTmpl)
+	if err != nil {
+		return errorz.Errorf("templates.ReadFile: %w", err)
+	}
+
+	if _, err := commonFile.Write(append([]byte(consts.GeneratedFileHeader+"\n"), r...)); err != nil {
+		return errorz.Errorf("commonFile.Write: %w", err)
 	}
 
 	for _, packageSource := range packageSources {
@@ -122,8 +145,8 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 		var tablesInPackage []*TableInfo
 
 		for _, fileSource := range packageSource.FileSources {
-			filePath := path.Join(cfg.GoORMOutputPath, fileSource.SourceRelativePath)
-			f, err := os.Create(filePath)
+			eachFilePath := path.Join(cfg.GoORMOutputPath, fileSource.SourceRelativePath)
+			eachFile, err := os.Create(eachFilePath)
 			if err != nil {
 				return errorz.Errorf("os.Create: %w", err)
 			}
@@ -138,61 +161,44 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 			sort.Slice(tables, func(i, j int) bool { return tables[i].SortKey < tables[j].SortKey })
 
 			eachFileTemplateOnce.Do(func() {
-				eachFileTemplate = template.Must(template.New("orm").Funcs(templateFuncMap(cfg)).Parse(string(mustz.One(templates.ReadFile(eachFileTmpl)))))
+				eachFileTemplate = template.Must(template.New(eachFileTmpl).Funcs(templateFuncMap(cfg)).Parse(string(mustz.One(templates.ReadFile(eachFileTmpl)))))
 			})
 
-			if err := eachFileTemplate.Execute(f, FileInfo{
-				SourceFile:        fileSource.SourceRelativePath,
-				PackageName:       packageSource.PackageName,
-				PackageImportPath: packageSource.PackageImportPath,
-				SliceTypeSuffix:   cfg.GoSliceTypeSuffix,
-				Tables:            tables,
+			if err := eachFileTemplate.Execute(eachFile, FileInfo{
+				SourceFile:              fileSource.SourceRelativePath,
+				PackageName:             packageSource.PackageName,
+				PackageImportPath:       packageSource.PackageImportPath,
+				CommonPackageImportPath: commonPackageImportPath,
+				SliceTypeSuffix:         cfg.GoSliceTypeSuffix,
+				Tables:                  tables,
 			}); err != nil {
 				return errorz.Errorf("template.Execute: %w", err)
 			}
 
-			defer f.Close()
+			defer eachFile.Close()
 		}
 
-		packageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, "ormgen.go")
-		packageFile, err := os.Create(packageFilePath)
+		eachPackageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, "ormgen.go")
+		eachPackageFile, err := os.Create(eachPackageFilePath)
 		if err != nil {
 			return errorz.Errorf("os.Create: %w", err)
 		}
-		defer packageFile.Close()
+		defer eachPackageFile.Close()
 
 		eachPackageTemplateOnce.Do(func() {
-			eachPackageTemplate = template.Must(template.New("orm").Funcs(templateFuncMap(cfg)).Parse(string(mustz.One(templates.ReadFile(eachPackageTmpl)))))
+			eachPackageTemplate = template.Must(template.New(eachPackageTmpl).Funcs(templateFuncMap(cfg)).Parse(string(mustz.One(templates.ReadFile(eachPackageTmpl)))))
 		})
 
-		if err := eachPackageTemplate.Execute(packageFile, FileInfo{
-			SourceFile:        packageSource.SourceRelativePath,
-			PackageName:       packageSource.PackageName,
-			PackageImportPath: packageSource.PackageImportPath,
-			SliceTypeSuffix:   cfg.GoSliceTypeSuffix,
-			Tables:            tablesInPackage,
+		if err := eachPackageTemplate.Execute(eachPackageFile, FileInfo{
+			SourceFile:              packageSource.SourceRelativePath,
+			PackageName:             packageSource.PackageName,
+			PackageImportPath:       packageSource.PackageImportPath,
+			CommonPackageImportPath: commonPackageImportPath,
+			SliceTypeSuffix:         cfg.GoSliceTypeSuffix,
+			Tables:                  tablesInPackage,
 		}); err != nil {
 			return errorz.Errorf("template.Execute: %w", err)
 		}
-
-		queryOptionFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, filepath.Base(queryOptionTmpl))
-		queryOptionFile, err := os.Create(queryOptionFilePath)
-		if err != nil {
-			return errorz.Errorf("os.Create: %w", err)
-		}
-		defer queryOptionFile.Close()
-
-		r, err := templates.ReadFile(queryOptionTmpl)
-		if err != nil {
-			return errorz.Errorf("os.ReadFile: %w", err)
-		}
-
-		r = bytes.Replace(r, []byte("package templates"), []byte("// Code generated by ormgen; DO NOT EDIT.\npackage "+packageSource.PackageName), 1)
-
-		if _, err := queryOptionFile.Write(r); err != nil {
-			return errorz.Errorf("queryOptionFile.Write: %w", err)
-		}
-
 	}
 
 	return nil

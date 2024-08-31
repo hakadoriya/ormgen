@@ -1,4 +1,4 @@
-package templates
+package ormgen
 
 import (
 	"strconv"
