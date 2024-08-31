@@ -3,7 +3,7 @@ package entrypoint
 import (
 	"github.com/hakadoriya/ormgen/internal/consts"
 	"github.com/hakadoriya/ormgen/internal/contexts"
-	gen_go "github.com/hakadoriya/ormgen/internal/lang/go/gen"
+	generator_go "github.com/hakadoriya/ormgen/internal/lang/go/generator"
 	source_go "github.com/hakadoriya/ormgen/internal/lang/go/source"
 	"github.com/hakadoriya/ormgen/pkg/apperr"
 	"github.com/hakadoriya/z.go/cliz"
@@ -20,7 +20,7 @@ func Generate(c *cliz.Command, args []string) error {
 			return errorz.Errorf("parsego.Parse: %w", err)
 		}
 
-		if err := gen_go.Output(c.Context(), packageSources); err != nil {
+		if err := generator_go.Output(c.Context(), packageSources); err != nil {
 			return errorz.Errorf("gen.Output: %w", err)
 		}
 

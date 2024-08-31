@@ -1,4 +1,4 @@
-package gen
+package generator
 
 import (
 	"context"
@@ -10,8 +10,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 
+	"github.com/hakadoriya/ormgen/internal/config"
 	"github.com/hakadoriya/ormgen/internal/consts"
 	"github.com/hakadoriya/ormgen/internal/contexts"
 	"github.com/hakadoriya/ormgen/internal/lang/go/source"
@@ -20,15 +22,19 @@ import (
 )
 
 const (
-	eachGoTmplName = "each.go.tmpl"
+	eachGoTmpl   = "templates/each.go.tmpl"
+	commonGoTmpl = "templates/common.go.tmpl"
 )
 
 var (
-	//go:embed each.go.tmpl
-	eachGoTmpl embed.FS
+	//go:embed templates
+	templates embed.FS
+
+	eachGoTemplate     *template.Template
+	eachGoTemplateOnce sync.Once
 )
 
-type EachGoTmpl struct {
+type FileInfo struct {
 	SourceFile        string
 	PackageName       string
 	PackageImportPath string
@@ -48,6 +54,50 @@ func fieldName(x ast.Expr) *ast.Ident {
 		return fieldName(t.X)
 	}
 	return nil
+}
+
+func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
+	return template.FuncMap{
+		"add":        func(a, b int) int { return a + b },
+		"sub":        func(a, b int) int { return a - b },
+		"upperFirst": func(s string) string { return strings.ToUpper(string(s[0])) + s[1:] },
+		"lowerFirst": func(s string) string { return strings.ToLower(string(s[0])) + s[1:] },
+		"basename":   path.Base,
+		"PlaceHolder": func(columns []*ColumnInfo, startIndex int) string {
+			var builder strings.Builder
+			for i := range columns {
+				if i != 0 {
+					builder.WriteString(", ")
+				}
+				switch cfg.Dialect {
+				case consts.DialectPostgres:
+					builder.WriteString("$")
+					builder.WriteString(strconv.Itoa(i + startIndex))
+				default:
+					builder.WriteString("?")
+				}
+			}
+			return builder.String()
+		},
+		"PlaceHolderInWhere": func(columns []*ColumnInfo, op string, startIndex int) string {
+			var builder strings.Builder
+			for i := range columns {
+				if i != 0 {
+					builder.WriteString(" " + op + " ")
+				}
+				builder.WriteString(columns[i].ColumnName)
+				builder.WriteString(" = ")
+				switch cfg.Dialect {
+				case consts.DialectPostgres:
+					builder.WriteString("$")
+					builder.WriteString(strconv.Itoa(i + startIndex))
+				default:
+					builder.WriteString("?")
+				}
+			}
+			return builder.String()
+		},
+	}
 }
 
 func Output(ctx context.Context, packageSources source.PackageSourceSlice) error {
@@ -77,47 +127,11 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 
 			sort.Slice(tables, func(i, j int) bool { return tables[i].SortKey < tables[j].SortKey })
 
-			if err := template.Must(template.New("orm").Funcs(template.FuncMap{
-				"add":        func(a, b int) int { return a + b },
-				"sub":        func(a, b int) int { return a - b },
-				"UpperFirst": func(s string) string { return strings.ToUpper(string(s[0])) + s[1:] },
-				"LowerFirst": func(s string) string { return strings.ToLower(string(s[0])) + s[1:] },
-				"Base":       path.Base,
-				"PlaceHolder": func(columns []*ColumnInfo, startIndex int) string {
-					var builder strings.Builder
-					for i := range columns {
-						if i != 0 {
-							builder.WriteString(", ")
-						}
-						switch cfg.Dialect {
-						case consts.DialectPostgres:
-							builder.WriteString("$")
-							builder.WriteString(strconv.Itoa(i + startIndex))
-						default:
-							builder.WriteString("?")
-						}
-					}
-					return builder.String()
-				},
-				"PlaceHolderInWhere": func(columns []*ColumnInfo, op string, startIndex int) string {
-					var builder strings.Builder
-					for i := range columns {
-						if i != 0 {
-							builder.WriteString(" " + op + " ")
-						}
-						builder.WriteString(columns[i].ColumnName)
-						builder.WriteString(" = ")
-						switch cfg.Dialect {
-						case consts.DialectPostgres:
-							builder.WriteString("$")
-							builder.WriteString(strconv.Itoa(i + startIndex))
-						default:
-							builder.WriteString("?")
-						}
-					}
-					return builder.String()
-				},
-			}).Parse(string(mustz.One(eachGoTmpl.ReadFile(eachGoTmplName))))).Execute(f, EachGoTmpl{
+			eachGoTemplateOnce.Do(func() {
+				eachGoTemplate = template.Must(template.New("orm").Funcs(templateFuncMap(cfg)).Parse(string(mustz.One(templates.ReadFile(eachGoTmpl)))))
+			})
+
+			if err := eachGoTemplate.Execute(f, FileInfo{
 				SourceFile:        fileSource.SourceRelativePath,
 				PackageName:       packageSource.PackageName,
 				PackageImportPath: packageSource.PackageImportPath,
