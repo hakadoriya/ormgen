@@ -23,9 +23,9 @@ func (s *{{ $.PackageName | upperFirst }}) Create{{ $table.StructName }}(ctx con
 
 const Get{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ PlaceHolderInWhere $table.PrimaryKeys "AND" 1 }}`
 
-func (s *{{ $.PackageName | upperFirst }}) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext QueryerContext, {{ range $i, $v := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $v.ColumnName }} {{ $v.FieldType }}{{ end }}) (*{{ $.PackageImportPath | basename }}.{{ $table.StructName }}, error) {
+func (s *{{ $.PackageName | upperFirst }}) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $.PackageImportPath | basename }}.{{ $table.StructName }}, error) {
 	LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}ByPKQuery)
-	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}ByPKQuery, {{ range $i, $v := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $v.FieldName }}{{ end }})
+	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $.PackageImportPath | basename }}.{{ $table.StructName }})
 	err := row.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $v.FieldName }}{{- end }})
 	if err != nil {
@@ -39,7 +39,7 @@ const Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $
 
 func (s *{{ $.PackageName | upperFirst }}) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $.PackageImportPath | basename }}.{{ $table.StructName }}, error) {
 	LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
-	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ range $i, $v := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $v.FieldName }}{{ end }})
+	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $.PackageImportPath | basename }}.{{ $table.StructName }})
 	err := row.Scan({{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $column.FieldName }}{{- end }})
 	if err != nil {
@@ -52,16 +52,16 @@ func (s *{{ $.PackageName | upperFirst }}) Get{{ $table.StructName }}By{{ $hasOn
 {{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
 const List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE ({{ PlaceHolderInWhere $hasManyColumns "AND" 1 }})`
 
-func (s *{{ $.PackageName | upperFirst }}) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...QueryOption) ({{ $.PackageImportPath | basename }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+func (s *{{ $.PackageName | upperFirst }}) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...ResultOption) ({{ $.PackageImportPath | basename }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := &queryConfig{
-		PlaceholderStartAt: {{ $currentIndex := len $hasManyColumns -}}{{ add $currentIndex 1 }}
+		PlaceholderStartAt: {{ $currentIndex := len $hasManyColumns -}}{{ add $currentIndex 1 }},
 	}
 	for _, o := range opts {
-		o.apply(config)
+		o.applyResultOption(config)
 	}
 	query, args := config.ToSQL(List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query)
 	LoggerFromContext(ctx).Debug(query)
-	rows, err := queryerContext.QueryContext(ctx, query{{ range $i, $v := $hasManyColumns }}, {{ $v.FieldName }}{{ end }}, args...)
+	rows, err := queryerContext.QueryContext(ctx, query{{ range $i, $hasManyCol := $hasManyColumns }}, {{ $hasManyCol.ColumnName }}{{ end }}, args...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", err)
 	}
@@ -83,6 +83,39 @@ func (s *{{ $.PackageName | upperFirst }}) List{{ $table.StructName }}By{{ $hasM
 	return {{ $table.TableName }}Slice, nil
 }
 {{ end }}
+const List{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
+
+func (s *{{ $.PackageName | upperFirst }}) List{{ $table.StructName }}(ctx context.Context, queryerContext QueryerContext, opts ...QueryOption) ({{ $.PackageImportPath | basename }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+	config := &queryConfig{
+		PlaceholderStartAt: 1,
+	}
+	for _, o := range opts {
+		o.applyQueryOption(config)
+	}
+	query, args := config.ToSQL(List{{ $table.StructName }}Query)
+	LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", err)
+	}
+	var {{ $table.TableName }}Slice {{ $.PackageImportPath | basename }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}
+	for rows.Next() {
+		{{ $table.TableName }} := new({{ $.PackageImportPath | basename }}.{{ $table.StructName }})
+		err := rows.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.TableName }}.{{ $v.FieldName }}{{- end }})
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", err)
+		}
+		{{ $table.TableName }}Slice = append({{ $table.TableName }}Slice, {{ $table.TableName }})
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", err)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", err)
+	}
+	return {{ $table.TableName }}Slice, nil
+}
+
 const Update{{ $table.StructName }}ByPKQuery = `UPDATE {{ $table.TableName }} SET ({{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) = ({{ PlaceHolder $table.NotPrimaryKeys 1 }}) WHERE {{ $currentIndex := len $table.NotPrimaryKeys }}{{ $nextIndex := add $currentIndex 1 }}{{ PlaceHolderInWhere .PrimaryKeys "AND" $nextIndex }}`
 
 func (s *{{ $.PackageName | upperFirst }}) Update{{ $table.StructName }}ByPK(ctx context.Context, queryerContext QueryerContext, {{ $table.TableName }} *{{ $.PackageImportPath | basename }}.{{ $table.StructName }}) error {

@@ -4,9 +4,15 @@ import (
 	"strings"
 )
 
-type QueryOption interface {
-	apply(c *queryConfig)
-}
+type (
+	ResultOption interface {
+		applyResultOption(c *queryConfig)
+		QueryOption
+	}
+	QueryOption interface {
+		applyQueryOption(c *queryConfig)
+	}
+)
 
 type PlaceholderGen func(args ...interface{}) string
 type PlaceholderGenGen func(placeholderStartAt *int, queryArgs *[]interface{}) PlaceholderGen
@@ -38,7 +44,7 @@ func (c *queryConfig) ToSQL(query string) (string, []interface{}) {
 		}
 	}
 	if c.Limit > 0 {
-		q += " LIMIT " + placeholderGen(&c.PlaceholderStartAt, c.Limit)
+		q += " LIMIT " + placeholderGen(c.Limit)
 	}
 	return q, args
 }
@@ -47,33 +53,40 @@ func (c *queryConfig) ToSQL(query string) (string, []interface{}) {
 // query prefix
 // ===============================================================
 
-func QueryPrefix(prefix string) QueryOption {
+func QueryPrefix(prefix string) ResultOption {
 	return &withListOptionQueryPrefix{
 		prefix: prefix,
 	}
 }
 
-var _ QueryOption = (*withListOptionQueryPrefix)(nil)
+var (
+	_ ResultOption = (*withListOptionQueryPrefix)(nil)
+	_ QueryOption  = (*withListOptionQueryPrefix)(nil)
+)
 
 type withListOptionQueryPrefix struct {
 	prefix string
 }
 
-func (o *withListOptionQueryPrefix) apply(c *queryConfig) {
+func (o *withListOptionQueryPrefix) applyResultOption(c *queryConfig) {
 	c.QueryPrefix += o.prefix
+}
+
+func (o *withListOptionQueryPrefix) applyQueryOption(c *queryConfig) {
+	o.applyResultOption(c)
 }
 
 // ===============================================================
 // ORDER BY
 // ===============================================================
 
-func OrderBy(orderBy ...string) QueryOption {
+func OrderBy(orderBy ...string) ResultOption {
 	return &withListOptionOrderBy{
 		columns: orderBy,
 	}
 }
 
-func OrderByDesc(orderBy ...string) QueryOption {
+func OrderByDesc(orderBy ...string) ResultOption {
 	return &withListOptionOrderBy{
 		columns: orderBy,
 		desc:    true,
@@ -85,38 +98,52 @@ type orderBy struct {
 	desc    bool
 }
 
-var _ QueryOption = (*withListOptionOrderBy)(nil)
+var (
+	_ ResultOption = (*withListOptionOrderBy)(nil)
+	_ QueryOption  = (*withListOptionOrderBy)(nil)
+)
 
 type withListOptionOrderBy struct {
 	columns []string
 	desc    bool
 }
 
-func (o *withListOptionOrderBy) apply(c *queryConfig) {
+func (o *withListOptionOrderBy) applyResultOption(c *queryConfig) {
 	c.OrderBy = &orderBy{
 		columns: o.columns,
 		desc:    o.desc,
 	}
 }
 
+func (o *withListOptionOrderBy) applyQueryOption(c *queryConfig) {
+	o.applyResultOption(c)
+}
+
 // ===============================================================
 // LIMIT
 // ===============================================================
 
-func Limit(limit int) QueryOption {
+func Limit(limit int) ResultOption {
 	return &withListOptionLimit{
 		limit: limit,
 	}
 }
 
-var _ QueryOption = (*withListOptionLimit)(nil)
+var (
+	_ ResultOption = (*withListOptionLimit)(nil)
+	_ QueryOption  = (*withListOptionLimit)(nil)
+)
 
 type withListOptionLimit struct {
 	limit int
 }
 
-func (o *withListOptionLimit) apply(c *queryConfig) {
+func (o *withListOptionLimit) applyResultOption(c *queryConfig) {
 	c.Limit = o.limit
+}
+
+func (o *withListOptionLimit) applyQueryOption(c *queryConfig) {
+	o.applyResultOption(c)
 }
 
 // ===============================================================
@@ -156,13 +183,15 @@ func (cc *conditionCompound) toSQL(placeHolderGen PlaceholderGen) string {
 	return s
 }
 
-var _ QueryOption = (*withListOptionWhere)(nil)
+var (
+	_ QueryOption = (*withListOptionWhere)(nil)
+)
 
 type withListOptionWhere struct {
 	where *where
 }
 
-func (o *withListOptionWhere) apply(c *queryConfig) {
+func (o *withListOptionWhere) applyQueryOption(c *queryConfig) {
 	c.Where = o.where
 }
 

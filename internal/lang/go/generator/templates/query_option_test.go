@@ -6,6 +6,8 @@ import (
 )
 
 func TestQueryOption(t *testing.T) {
+	const query = "SELECT * FROM user WHERE group_id = $1" // placeholder 1
+
 	c := &queryConfig{
 		PlaceholderGenGen: func(placeholderStartAt *int, queryArgs *[]interface{}) PlaceholderGen {
 			return func(args ...interface{}) string {
@@ -19,22 +21,29 @@ func TestQueryOption(t *testing.T) {
 		PlaceholderStartAt: 2,
 	}
 
-	QueryPrefix("@{HOGE=hoge}").apply(c)
-	Where(
-		And(
-			Equal("name", "hoge"),
-			LessThan("age", 20),
-			Or(
-				NotIn("group_id", 1, 2, 3),
-				Equal("is_admin", true),
+	opts := []QueryOption{
+		QueryPrefix("@{HOGE=hoge}"),
+		Where(
+			And(
+				Equal("name", "Alice"), // placeholder 2
+				LessThan("age", 20),    // placeholder 3
+				Or(
+					NotIn("group_id", 1, 2, 3), // placeholder 4, 5, 6
+					Equal("is_admin", true),    // placeholder 7
+				),
 			),
 		),
-	).apply(c)
-	OrderByDesc("created_at").apply(c)
-	Limit(10).apply(c)
+		OrderByDesc("created_at"),
+		Limit(10), // placeholder 8
+	}
 
-	query, args := c.ToSQL("SELECT * FROM user WHERE group_id = $1")
+	for _, o := range opts {
+		o.applyQueryOption(c)
+	}
 
-	t.Logf("\n" + query)
-	t.Logf("\n%v", args)
+	q, args := c.ToSQL(query)
+
+	t.Logf("\n" + q)
+
+	t.Logf("\n%#v", args)
 }
