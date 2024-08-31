@@ -8,7 +8,6 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -158,8 +157,6 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 				tables = append(tables, tableInfo)
 				tablesInPackage = append(tablesInPackage, tableInfo)
 			}
-
-			sort.Slice(tables, func(i, j int) bool { return tables[i].SortKey < tables[j].SortKey })
 
 			eachFileTemplateOnce.Do(func() {
 				eachFileTemplate = template.Must(template.New(eachFileTmpl).Funcs(templateFuncMap(cfg)).Parse(string(mustz.One(templates.ReadFile(eachFileTmpl)))))

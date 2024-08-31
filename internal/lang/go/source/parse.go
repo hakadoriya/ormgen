@@ -13,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/hakadoriya/ormgen/internal/contexts"
@@ -166,6 +167,8 @@ func parseFile(ctx context.Context, sourcePath, filePath string) (*FileSource, e
 	if len(structSources) == 0 {
 		return nil, errorz.Errorf("path=%s: %w", filePath, apperr.ErrNoStructSourceFound)
 	}
+
+	sort.SliceStable(structSources, func(i, j int) bool { return structSources[i].Position.Line < structSources[j].Position.Line })
 
 	return &FileSource{
 		FilePath:           filePath,
