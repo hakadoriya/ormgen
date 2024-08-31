@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	eachFileTmpl    = "templates/each_file.go.tmpl"
-	eachPackageTmpl = "templates/ormgen.go.tmpl"
-	commonTmpl      = "templates/common.go"
+	eachFileTmpl    = "templates/package/each_file.go.tmpl"
+	eachPackageTmpl = "templates/package/ormgen.go.tmpl"
+	commonTmpl      = "templates/ormgen/common.go"
 )
 
 var (
@@ -177,7 +177,8 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 			defer eachFile.Close()
 		}
 
-		eachPackageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, strings.TrimSuffix(filepath.Base(eachPackageTmpl), ".tmpl"))
+		eachPackageFileName := filepath.Base(strings.TrimSuffix(eachPackageTmpl, ".tmpl"))
+		eachPackageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, eachPackageFileName)
 		eachPackageFile, err := os.Create(eachPackageFilePath)
 		if err != nil {
 			return errorz.Errorf("os.Create: %w", err)
