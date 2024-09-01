@@ -8,16 +8,14 @@ import (
 	"github.com/hakadoriya/ormgen/internal/entrypoint"
 	"github.com/hakadoriya/z.go/cliz"
 	"github.com/hakadoriya/z.go/errorz"
+	"github.com/hakadoriya/z.go/mustz"
 )
 
 func Exec(ctx context.Context, osArgs []string) (exitCode int, err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	generateOpts, err := cliz.MarshalOptions(new(config.GenerateConfig))
-	if err != nil {
-		return 1, errorz.Errorf("cliz.MarshalOptions: %w", err)
-	}
+	generateOpts := mustz.One(cliz.MarshalOptions(new(config.GenerateConfig)))
 
 	//nolint:exhaustruct
 	cmd := &cliz.Command{
