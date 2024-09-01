@@ -92,6 +92,7 @@ func TestOrmGen(t *testing.T) {
 			if err == nil {
 				t.Error("❌: err == nil")
 			}
+			t.Logf("📝: query:\n%s", queryerContext.QueryContextArgs.query)
 			const expectedQuery = "SELECT user_id, username, address, group_id FROM user WHERE (username = $1 AND city = $2 AND (group_id = $3 OR group_id = $4))"
 			actualQuery := queryerContext.QueryContextArgs.query
 			if expectedQuery != actualQuery {
