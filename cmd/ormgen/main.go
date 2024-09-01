@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	exitCode, err := ormgen.Exec(context.Background())
+	exitCode, err := ormgen.Exec(context.Background(), os.Args)
 	if err != nil {
 		logs.Stderr.Error(fmt.Sprintf("exit %d", exitCode), slog.Any("error", err))
 	}

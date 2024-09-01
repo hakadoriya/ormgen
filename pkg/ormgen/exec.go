@@ -2,7 +2,6 @@ package ormgen
 
 import (
 	"context"
-	"os"
 
 	"github.com/hakadoriya/ormgen/internal/config"
 	"github.com/hakadoriya/ormgen/internal/consts"
@@ -11,7 +10,7 @@ import (
 	"github.com/hakadoriya/z.go/errorz"
 )
 
-func Exec(ctx context.Context) (exitCode int, err error) {
+func Exec(ctx context.Context, osArgs []string) (exitCode int, err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -40,7 +39,7 @@ func Exec(ctx context.Context) (exitCode int, err error) {
 		},
 	}
 
-	if err := cmd.Exec(ctx, os.Args); err != nil && !cliz.IsHelp(err) {
+	if err := cmd.Exec(ctx, osArgs); err != nil && !cliz.IsHelp(err) {
 		return 1, errorz.Errorf("cmd.Exec: %w", err)
 	}
 

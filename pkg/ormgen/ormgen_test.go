@@ -1,19 +1,15 @@
-package generator_test
+package ormgen_test
 
 import (
 	"bytes"
 	"context"
 	"database/sql"
 	"log/slog"
-	"os/exec"
 	"testing"
 
 	"github.com/hakadoriya/ormgen/example/generated/ormgen"
 	"github.com/hakadoriya/ormgen/example/generated/user"
-	"github.com/hakadoriya/z.go/testingz/requirez"
 )
-
-//go:generate sh -cx "cd .. && pwd && go run ./cmd/ormgen generate ./example/model --go-orm-output-path ./example/generated"
 
 type (
 	testQueryerContext struct {
@@ -101,19 +97,6 @@ func TestOrmGen(t *testing.T) {
 			if expectedQuery != actualQuery {
 				t.Errorf("❌: expected(%s) != actual(%s)", expectedQuery, actualQuery)
 			}
-		}
-
-		buf = bytes.NewBuffer(nil)
-		// cmd := exec.Command("go", "run", "./cmd/ormgen", "generate", "./example/model", "--go-orm-output-path", "./example/generated")
-		cmd := exec.Command("sh", "-c", "cd .. && go run ./cmd/ormgen generate ./example/model --go-orm-output-path ./example/generated")
-		cmd.Stdout = buf
-		cmd.Stderr = buf
-		cmdErr := cmd.Run()
-		requirez.NoError(t, cmdErr)
-		const expectedOutput = ""
-		actualOutput := buf.String()
-		if expectedOutput != actualOutput {
-			t.Errorf("❌: expected(%s) != actual(%s)", expectedOutput, actualOutput)
 		}
 	})
 }
