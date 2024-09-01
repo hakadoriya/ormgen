@@ -90,8 +90,8 @@ func (s *StructSource) GoString() string {
 }
 
 const (
-	//	                                             _____________ <- 1. comment prefix
-	//	                                                             __ <- 2. tag key
+	//	                                              _____________ <- 1. comment prefix
+	//	                                                              __ <- 2. tag key
 	//	                                                                                     ___ <- 5. comment suffix
 	_GoColumnTagCommentLineRegexFormat        = `^\s*(//+\s*|/\*\s*)?(%s)\s*:\s*(\S*)\s*(\S*)(\*/)?`
 	_GoColumnTagCommentLineRegexTagNameIndex  = /*                               ^^^ 3. tag name */ 3

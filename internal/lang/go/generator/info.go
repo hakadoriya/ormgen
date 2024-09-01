@@ -13,7 +13,6 @@ import (
 )
 
 type TableInfo struct {
-	SortKey         string
 	StructName      string
 	TableName       string
 	Columns         []*ColumnInfo
@@ -38,10 +37,7 @@ type ColumnInfo struct {
 func BuildTableInfo(ctx context.Context, structSource *source.StructSource) *TableInfo {
 	cfg := contexts.GenerateConfig(ctx)
 
-	sortKey := fmt.Sprintf("%s:%09d", structSource.Position.Filename, structSource.Position.Line)
-	logs.Stdout.Debug(fmt.Sprintf("sortKey=%q", sortKey))
 	tableInfo := &TableInfo{
-		SortKey:     sortKey,
 		StructName:  structSource.TypeSpec.Name.Name,
 		TableName:   structSource.ExtractTableName(ctx),
 		Columns:     make([]*ColumnInfo, 0, len(structSource.StructType.Fields.List)),
