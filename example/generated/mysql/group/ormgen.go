@@ -6,7 +6,7 @@ package group
 import (
 	"context"
 
-	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/mysql/ormgen"
 	group_ "github.com/hakadoriya/ormgen/example/model/group"
 )
 

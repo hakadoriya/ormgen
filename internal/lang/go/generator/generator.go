@@ -16,7 +16,7 @@ import (
 	"github.com/hakadoriya/ormgen/internal/consts"
 	"github.com/hakadoriya/ormgen/internal/contexts"
 	"github.com/hakadoriya/ormgen/internal/lang/go/source"
-	"github.com/hakadoriya/ormgen/internal/util"
+	"github.com/hakadoriya/z.go/buildz"
 	"github.com/hakadoriya/z.go/errorz"
 	"github.com/hakadoriya/z.go/mustz"
 )
@@ -69,7 +69,7 @@ func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
 		"upperFirst": func(s string) string { return strings.ToUpper(string(s[0])) + s[1:] },
 		"lowerFirst": func(s string) string { return strings.ToLower(string(s[0])) + s[1:] },
 		"basename":   filepath.Base,
-		"PlaceHolder": func(columns []*ColumnInfo, startIndex int) string {
+		"placeholder": func(columns []*ColumnInfo, startIndex int) string {
 			var builder strings.Builder
 			for i := range columns {
 				if i != 0 {
@@ -85,7 +85,7 @@ func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
 			}
 			return builder.String()
 		},
-		"PlaceHolderInWhere": func(columns []*ColumnInfo, op string, startIndex int) string {
+		"placeholderInWhere": func(columns []*ColumnInfo, op string, startIndex int) string {
 			var builder strings.Builder
 			for i := range columns {
 				if i != 0 {
@@ -114,9 +114,9 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 		return errorz.Errorf("os.MkdirAll: %w", err)
 	}
 
-	commonPackageImportPath, err := util.DetectPackageImportPath(commonDirPath)
+	commonPackageImportPath, err := buildz.FindPackageImportPath(commonDirPath)
 	if err != nil {
-		return errorz.Errorf("util.DetectPackageImportPath: %w", err)
+		return errorz.Errorf("buildz.FindPackageImportPath: %w", err)
 	}
 
 	commonFilePath := filepath.Join(commonDirPath, filepath.Base(commonTmpl))

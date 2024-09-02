@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/hakadoriya/ormgen/example/generated/ormgen"
-	"github.com/hakadoriya/ormgen/example/generated/user"
+	"github.com/hakadoriya/ormgen/example/generated/postgres/ormgen"
+	"github.com/hakadoriya/ormgen/example/generated/postgres/user"
 )
 
 type (
@@ -88,12 +88,25 @@ func TestOrmGen(t *testing.T) {
 		ctx := ormgen.LoggerWithContext(context.Background(), slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
 
 		{
-			_, err := orm.ListUser(ctx, queryerContext, ormgen.Where(ormgen.And(ormgen.Equal("username", "Alice"), ormgen.Equal("city", "Tokyo"), ormgen.Or(ormgen.Equal("group_id", 1), ormgen.Equal("group_id", 2)))))
+			_, err := orm.ListUser(ctx, queryerContext,
+				ormgen.Where(
+					ormgen.And(
+						ormgen.Equal("username", "Alice"), // placeholder $1
+						ormgen.NotEqual("city", "Tokyo"),  // placeholder $2
+						ormgen.Or(
+							ormgen.In("group_id", 1, 2, 3),     // placeholder $3 $4 $5
+							ormgen.NotIn("attribute_id", 4, 5), // placeholder $6 $7
+						),
+					),
+				),
+				ormgen.OrderByDesc("created_at"),
+				ormgen.Limit(10), // placeholder $8
+			)
 			if err == nil {
 				t.Error("❌: err == nil")
 			}
 			t.Logf("📝: query:\n%s", queryerContext.QueryContextArgs.query)
-			const expectedQuery = "SELECT user_id, username, address, group_id FROM user WHERE (username = $1 AND city = $2 AND (group_id = $3 OR group_id = $4))"
+			const expectedQuery = `SELECT user_id, username, address, group_id FROM user WHERE (username = $1 AND city <> $2 AND (group_id IN ($3, $4, $5) OR attribute_id NOT IN ($6, $7))) ORDER BY created_at DESC LIMIT $8`
 			actualQuery := queryerContext.QueryContextArgs.query
 			if expectedQuery != actualQuery {
 				t.Errorf("❌: expected(%s) != actual(%s)", expectedQuery, actualQuery)

@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/postgres/ormgen"
 	user_ "github.com/hakadoriya/ormgen/example/model/user"
 )
 

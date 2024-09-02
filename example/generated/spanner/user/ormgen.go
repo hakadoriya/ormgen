@@ -6,7 +6,7 @@ package user
 import (
 	"context"
 
-	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/spanner/ormgen"
 	user_ "github.com/hakadoriya/ormgen/example/model/user"
 )
 

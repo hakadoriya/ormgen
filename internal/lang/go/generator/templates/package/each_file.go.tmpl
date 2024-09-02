@@ -11,7 +11,7 @@ import (
 	{{ $packageImportPathOriginal := $.PackageImportPath | basename }}{{ $packageImportPath := print $packageImportPathOriginal "_" }}{{ $packageImportPath }} "{{ $.PackageImportPath }}"
 )
 {{ range $i, $table := $.Tables }}
-const Create{{ $table.StructName }}Query = `INSERT INTO {{ $table.TableName }} ({{- range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) VALUES ({{ PlaceHolder $table.Columns 1 }})`
+const Create{{ $table.StructName }}Query = `INSERT INTO {{ $table.TableName }} ({{- range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) VALUES ({{ placeholder $table.Columns 1 }})`
 
 func (s *_ORM) Create{{ $table.StructName }}(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
 	{{ $commonPackageImportPath }}.LoggerFromContext(ctx).Debug(Create{{ $table.StructName }}Query)
@@ -22,7 +22,7 @@ func (s *_ORM) Create{{ $table.StructName }}(ctx context.Context, queryerContext
 	return nil
 }
 
-const Get{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ PlaceHolderInWhere $table.PrimaryKeys "AND" 1 }}`
+const Get{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }}`
 
 func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
 	{{ $commonPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}ByPKQuery)
@@ -36,7 +36,7 @@ func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContex
 }
 {{ range $i, $hasOneTagsKey := $table.HasOneTagsKeys -}}
 {{- /* map access by slice element */ -}}{{- $hasOneColumns := index $table.HasOneTags $hasOneTagsKey }}
-const Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ PlaceHolderInWhere $hasOneColumns "AND" 1 }}`
+const Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }}`
 
 func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
 	{{ $commonPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
@@ -51,7 +51,7 @@ func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Cont
 {{ end -}}
 {{ range $i, $hasManyTagsKey := $table.HasManyTagsKeys -}}
 {{- /* map access by slice element */ -}}{{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
-const List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE ({{ PlaceHolderInWhere $hasManyColumns "AND" 1 }})`
+const List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE ({{ placeholderInWhere $hasManyColumns "AND" 1 }})`
 
 func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $commonPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $commonPackageImportPath }}.QueryConfig)
@@ -115,7 +115,7 @@ func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {
 	return {{ $table.TableName }}Slice, nil
 }
 
-const Update{{ $table.StructName }}ByPKQuery = `UPDATE {{ $table.TableName }} SET ({{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) = ({{ PlaceHolder $table.NotPrimaryKeys 1 }}) WHERE {{ $currentIndex := len $table.NotPrimaryKeys }}{{ $nextIndex := add $currentIndex 1 }}{{ PlaceHolderInWhere .PrimaryKeys "AND" $nextIndex }}`
+const Update{{ $table.StructName }}ByPKQuery = `UPDATE {{ $table.TableName }} SET ({{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) = ({{ placeholder $table.NotPrimaryKeys 1 }}) WHERE {{ $currentIndex := len $table.NotPrimaryKeys }}{{ $nextIndex := add $currentIndex 1 }}{{ placeholderInWhere .PrimaryKeys "AND" $nextIndex }}`
 
 func (s *_ORM) Update{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $commonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
 	{{ $commonPackageImportPath }}.LoggerFromContext(ctx).Debug(Update{{ $table.StructName }}ByPKQuery)

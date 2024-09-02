@@ -7,11 +7,11 @@ import (
 	"context"
 	"fmt"
 
-	ormgen "github.com/hakadoriya/ormgen/example/generated/ormgen"
+	ormgen "github.com/hakadoriya/ormgen/example/generated/sqlite3/ormgen"
 	group_ "github.com/hakadoriya/ormgen/example/model/group"
 )
 
-const CreateGroupQuery = `INSERT INTO group (id, name) VALUES ($1, $2)`
+const CreateGroupQuery = `INSERT INTO group (id, name) VALUES (?, ?)`
 
 func (s *_ORM) CreateGroup(ctx context.Context, queryerContext ormgen.QueryerContext, group *group_.Group) error {
 	ormgen.LoggerFromContext(ctx).Debug(CreateGroupQuery)
@@ -22,7 +22,7 @@ func (s *_ORM) CreateGroup(ctx context.Context, queryerContext ormgen.QueryerCon
 	return nil
 }
 
-const GetGroupByPKQuery = `SELECT id, name FROM group WHERE id = $1`
+const GetGroupByPKQuery = `SELECT id, name FROM group WHERE id = ?`
 
 func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormgen.QueryerContext, id int) (*group_.Group, error) {
 	ormgen.LoggerFromContext(ctx).Debug(GetGroupByPKQuery)
@@ -39,7 +39,7 @@ const ListGroupQuery = `SELECT id, name FROM group`
 
 func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormgen.QueryerContext, opts ...ormgen.QueryOption) (group_.GroupSlice, error) {
 	config := new(ormgen.QueryConfig)
-	ormgen.WithPlaceholderGenerator(ormgen.PlaceholderGeneratorMap["postgres"]).ApplyResultOption(config)
+	ormgen.WithPlaceholderGenerator(ormgen.PlaceholderGeneratorMap["sqlite3"]).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}
@@ -67,7 +67,7 @@ func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormgen.QueryerConte
 	return groupSlice, nil
 }
 
-const UpdateGroupByPKQuery = `UPDATE group SET (name) = ($1) WHERE id = $2`
+const UpdateGroupByPKQuery = `UPDATE group SET (name) = (?) WHERE id = ?`
 
 func (s *_ORM) UpdateGroupByPK(ctx context.Context, queryerContext ormgen.QueryerContext, group *group_.Group) error {
 	ormgen.LoggerFromContext(ctx).Debug(UpdateGroupByPKQuery)

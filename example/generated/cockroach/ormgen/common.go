@@ -58,6 +58,7 @@ var PlaceholderGeneratorMap = map[string]PlaceholderGenerator{
 	"postgres":  postgrePlaceholderGenerator,
 	"cockroach": postgrePlaceholderGenerator,
 	"mysql":     mysqlPlaceholderGenerator,
+	"sqlite3":   mysqlPlaceholderGenerator,
 	"spanner":   mysqlPlaceholderGenerator,
 }
 
