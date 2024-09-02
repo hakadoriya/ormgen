@@ -39,12 +39,12 @@ func GeneratePreHookExec(c *cliz.Command, args []string) (err error) {
 	}
 
 	if cfg.Trace {
-		logs.Trace = logs.New(c.Stdout(), slog.LevelDebug)
+		logs.Trace = logs.NewTrace(c.Stdout(), slog.LevelDebug, slog.String("logName", "trace"))
 		cfg.Debug = true
 	}
 
 	if cfg.Debug {
-		logs.Stdout = logs.New(c.Stdout(), slog.LevelDebug)
+		logs.Stdout = logs.NewStdout(c.Stdout(), slog.LevelDebug, slog.String("logName", "stdout"))
 
 		cmd := c.GetExecutedCommandNames()
 		logs.Stdout.Debug(strings.Join(cmd, " ")+" "+strings.Join(args, " "), slog.Any("cmd", cmd), slog.Any("args", args), slog.Any("config", cfg))

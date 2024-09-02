@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hakadoriya/ormgen/internal/contexts"
+	"github.com/hakadoriya/z.go/otelz/tracez"
 )
 
 type PackageSourceSlice []*PackageSource
@@ -64,14 +64,12 @@ func (s *StructSource) CommentGroupString() string {
 	return builder.String()
 }
 
-// var (
-// 	extractTableNameRegex = regexp.MustCompile(`^\s*(//+\s*|/\*\s*)?\S+\s*:\s*table(s)?\s*[: ]\s*(\S+.*)$`)
-// 	extractTableNameIndex = 3
-// )
+func (s *StructSource) ExtractTableName(ctx context.Context, goColumnTag string) string {
+	ctx, span := tracez.Start(ctx)
+	defer span.End()
 
-func (s *StructSource) ExtractTableName(ctx context.Context) string {
 	for _, comment := range s.CommentGroup.List {
-		if matches := GoColumnTagCommentLineRegex(ctx).FindStringSubmatch(comment.Text); len(matches) > _GoColumnTagCommentLineRegexTagValueIndex {
+		if matches := GoColumnTagCommentLineRegex(ctx, goColumnTag).FindStringSubmatch(comment.Text); len(matches) > _GoColumnTagCommentLineRegexTagValueIndex {
 			return matches[_GoColumnTagCommentLineRegexTagValueIndex]
 		}
 	}
@@ -92,7 +90,7 @@ func (s *StructSource) GoString() string {
 const (
 	//	                                              _____________ <- 1. comment prefix
 	//	                                                              __ <- 2. tag key
-	//	                                                                                     ___ <- 5. comment suffix
+	//	                                                                                      ___ <- 5. comment suffix
 	_GoColumnTagCommentLineRegexFormat        = `^\s*(//+\s*|/\*\s*)?(%s)\s*:\s*(\S*)\s*(\S*)(\*/)?`
 	_GoColumnTagCommentLineRegexTagNameIndex  = /*                               ^^^ 3. tag name */ 3
 	_GoColumnTagCommentLineRegexTagValueIndex = /*                                       ^^^ 4. tag value */ 4
@@ -100,15 +98,19 @@ const (
 
 //nolint:gochecknoglobals
 var (
-	_GoColumnTagCommentLineRegex     *regexp.Regexp
-	_GoColumnTagCommentLineRegexOnce sync.Once
+	_GoColumnTagCommentLineRegexMap sync.Map
 )
 
-func GoColumnTagCommentLineRegex(ctx context.Context) *regexp.Regexp {
-	cfg := contexts.GenerateConfig(ctx)
+func GoColumnTagCommentLineRegex(ctx context.Context, goColumnTag string) *regexp.Regexp {
+	ctx, span := tracez.Start(ctx)
+	defer span.End()
 
-	_GoColumnTagCommentLineRegexOnce.Do(func() {
-		_GoColumnTagCommentLineRegex = regexp.MustCompile(fmt.Sprintf(_GoColumnTagCommentLineRegexFormat, cfg.GoColumnTag))
-	})
-	return _GoColumnTagCommentLineRegex
+	if v, ok := _GoColumnTagCommentLineRegexMap.Load(goColumnTag); ok {
+		return v.(*regexp.Regexp)
+	}
+
+	re := regexp.MustCompile(fmt.Sprintf(_GoColumnTagCommentLineRegexFormat, goColumnTag))
+	_GoColumnTagCommentLineRegexMap.Store(goColumnTag, re)
+
+	return re
 }

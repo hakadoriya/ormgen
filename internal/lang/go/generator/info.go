@@ -9,7 +9,6 @@ import (
 
 	"github.com/hakadoriya/ormgen/internal/contexts"
 	"github.com/hakadoriya/ormgen/internal/lang/go/source"
-	"github.com/hakadoriya/ormgen/internal/logs"
 )
 
 type TableInfo struct {
@@ -39,7 +38,7 @@ func BuildTableInfo(ctx context.Context, structSource *source.StructSource) *Tab
 
 	tableInfo := &TableInfo{
 		StructName:  structSource.TypeSpec.Name.Name,
-		TableName:   structSource.ExtractTableName(ctx),
+		TableName:   structSource.ExtractTableName(ctx, cfg.GoColumnTag),
 		Columns:     make([]*ColumnInfo, 0, len(structSource.StructType.Fields.List)),
 		PrimaryKeys: make([]*ColumnInfo, 0, len(structSource.StructType.Fields.List)),
 		HasOneTags:  make(map[string][]*ColumnInfo),
@@ -51,10 +50,10 @@ func BuildTableInfo(ctx context.Context, structSource *source.StructSource) *Tab
 			// db tag
 			switch columnName := tag.Get(cfg.GoColumnTag); columnName {
 			case "", "-":
-				logs.Trace.Debug(fmt.Sprintf("SKIP: %s: field.Names=%s, columnName=%q", structSource.Position.String(), field.Names, columnName))
+				contexts.Trace(ctx).Debug(fmt.Sprintf("SKIP: %s: field.Names=%s, columnName=%q", structSource.Position.String(), field.Names, columnName))
 				// noop
 			default:
-				logs.Trace.Debug(fmt.Sprintf("%s: field.Names=%s, columnName=%q", structSource.Position.String(), field.Names, columnName))
+				contexts.Trace(ctx).Debug(fmt.Sprintf("%s: field.Names=%s, columnName=%q", structSource.Position.String(), field.Names, columnName))
 				columnInfo := &ColumnInfo{
 					FieldName:  field.Names[0].Name,
 					FieldType:  fieldName(field.Type).String(),
@@ -63,7 +62,7 @@ func BuildTableInfo(ctx context.Context, structSource *source.StructSource) *Tab
 				// pk tag
 				switch pk := tag.Get(cfg.GoPKTag); pk {
 				case "true":
-					logs.Trace.Debug(fmt.Sprintf("SKIP: %s: field.Names=%s, pk=%q", structSource.Position.String(), field.Names, pk))
+					contexts.Trace(ctx).Debug(fmt.Sprintf("SKIP: %s: field.Names=%s, pk=%q", structSource.Position.String(), field.Names, pk))
 					columnInfo.PK = true
 					tableInfo.PrimaryKeys = append(tableInfo.PrimaryKeys, columnInfo)
 				default:
@@ -72,7 +71,7 @@ func BuildTableInfo(ctx context.Context, structSource *source.StructSource) *Tab
 				// hasOne tag
 				for _, hasOneTag := range strings.Split(tag.Get(cfg.GoHasOneTag), ",") {
 					if hasOneTag != "" {
-						logs.Trace.Debug(fmt.Sprintf("%s: field.Names=%s, hasOneTag=%q", structSource.Position.String(), field.Names, hasOneTag))
+						contexts.Trace(ctx).Debug(fmt.Sprintf("%s: field.Names=%s, hasOneTag=%q", structSource.Position.String(), field.Names, hasOneTag))
 						columnInfo.HasOneTags = append(columnInfo.HasOneTags, hasOneTag)
 						tableInfo.HasOneTagsKeys = append(tableInfo.HasOneTagsKeys, hasOneTag)
 						tableInfo.HasOneTags[hasOneTag] = append(tableInfo.HasOneTags[hasOneTag], columnInfo)
@@ -81,7 +80,7 @@ func BuildTableInfo(ctx context.Context, structSource *source.StructSource) *Tab
 				// hasMany tag
 				for _, hasManyTag := range strings.Split(tag.Get(cfg.GoHasManyTag), ",") {
 					if hasManyTag != "" {
-						logs.Trace.Debug(fmt.Sprintf("%s: field.Names=%s, hasManyTag=%q", structSource.Position.String(), field.Names, hasManyTag))
+						contexts.Trace(ctx).Debug(fmt.Sprintf("%s: field.Names=%s, hasManyTag=%q", structSource.Position.String(), field.Names, hasManyTag))
 						columnInfo.HasManyTags = append(columnInfo.HasManyTags, hasManyTag)
 						tableInfo.HasManyTagsKeys = append(tableInfo.HasManyTagsKeys, hasManyTag)
 						tableInfo.HasManyTags[hasManyTag] = append(tableInfo.HasManyTags[hasManyTag], columnInfo)

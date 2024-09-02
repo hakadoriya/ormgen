@@ -5,7 +5,6 @@ import (
 	"embed"
 	"go/ast"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -69,7 +68,7 @@ func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
 		"sub":        func(a, b int) int { return a - b },
 		"upperFirst": func(s string) string { return strings.ToUpper(string(s[0])) + s[1:] },
 		"lowerFirst": func(s string) string { return strings.ToLower(string(s[0])) + s[1:] },
-		"basename":   path.Base,
+		"basename":   filepath.Base,
 		"PlaceHolder": func(columns []*ColumnInfo, startIndex int) string {
 			var builder strings.Builder
 			for i := range columns {
@@ -110,7 +109,7 @@ func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
 func Output(ctx context.Context, packageSources source.PackageSourceSlice) error {
 	cfg := contexts.GenerateConfig(ctx)
 
-	commonDirPath := path.Join(cfg.GoORMOutputPath, "ormgen")
+	commonDirPath := filepath.Join(cfg.GoORMOutputPath, "ormgen")
 	if err := os.MkdirAll(commonDirPath, consts.Perm0o775); err != nil {
 		return errorz.Errorf("os.MkdirAll: %w", err)
 	}
@@ -120,7 +119,7 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 		return errorz.Errorf("util.DetectPackageImportPath: %w", err)
 	}
 
-	commonFilePath := path.Join(commonDirPath, filepath.Base(commonTmpl))
+	commonFilePath := filepath.Join(commonDirPath, filepath.Base(commonTmpl))
 	commonFile, err := os.Create(commonFilePath)
 	if err != nil {
 		return errorz.Errorf("os.Create: %w", err)
@@ -137,7 +136,7 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 	}
 
 	for _, packageSource := range packageSources {
-		packageDirPath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath)
+		packageDirPath := filepath.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath)
 		if err := os.MkdirAll(packageDirPath, consts.Perm0o775); err != nil {
 			return errorz.Errorf("os.MkdirAll: %w", err)
 		}
@@ -145,7 +144,7 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 		var tablesInPackage []*TableInfo
 
 		for _, fileSource := range packageSource.FileSources {
-			eachFilePath := path.Join(cfg.GoORMOutputPath, fileSource.SourceRelativePath)
+			eachFilePath := filepath.Join(cfg.GoORMOutputPath, fileSource.SourceRelativePath)
 			eachFile, err := os.Create(eachFilePath)
 			if err != nil {
 				return errorz.Errorf("os.Create: %w", err)
@@ -178,7 +177,7 @@ func Output(ctx context.Context, packageSources source.PackageSourceSlice) error
 		}
 
 		eachPackageFileName := filepath.Base(strings.TrimSuffix(eachPackageTmpl, ".tmpl"))
-		eachPackageFilePath := path.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, eachPackageFileName)
+		eachPackageFilePath := filepath.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath, eachPackageFileName)
 		eachPackageFile, err := os.Create(eachPackageFilePath)
 		if err != nil {
 			return errorz.Errorf("os.Create: %w", err)

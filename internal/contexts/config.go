@@ -12,5 +12,5 @@ func GenerateConfig(ctx context.Context) *config.GenerateConfig {
 }
 
 func WithGenerateConfig(ctx context.Context, cfg *config.GenerateConfig) context.Context {
-	return contextz.WithValue(ctx, *cfg)
+	return contextz.WithValue(ctx, cfg)
 }

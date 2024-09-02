@@ -66,7 +66,7 @@ test:  ## Run go test and display coverage
 	@[ -x "${DOTLOCAL_BIN_DIR}/godotnev" ] || GOBIN="${DOTLOCAL_BIN_DIR}" go install github.com/joho/godotenv/cmd/godotenv@latest
 
 	# Unit testing
-	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt.tmp ./... ; grep -v -e "/testingz/" -e "/buildinfoz/" -e "/example/" -e ".deprecated.go" -e ".generated.go" -e ".gen.go" ./coverage.txt.tmp > ./coverage.txt
+	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt.tmp ./... ; grep -v -e "/testdata/" -e "/example/" -e "/testingz/" -e "/buildinfoz/" -e ".deprecated.go" -e ".generated.go" -e ".gen.go" ./coverage.txt.tmp > ./coverage.txt
 	go tool cover -func=./coverage.txt
 
 .PHONY: bench
