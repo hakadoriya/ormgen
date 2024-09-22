@@ -8,13 +8,13 @@ scrape_configs:
       - targets: [ 'localhost:9090' ]
         labels:
           alias: 'prometheus'
-  - job_name: 'otel-collector'
+  - job_name: 'otelcol'
     scrape_interval: 10s
     static_configs:
-      - targets: [ 'otel-collector:8888' ]  # OpenTelemetry Collector Prometheus exporter
+      - targets: [ 'otelcol:8888' ]  # OpenTelemetry Collector Prometheus exporter
         labels:
-          alias: 'otel-collector'
-      - targets: [ 'otel-collector:8889' ]  # OpenTelemetry Metrics Prometheus exporter
+          alias: 'otelcol'
+      - targets: [ 'otelcol:8889' ]  # OpenTelemetry Metrics Prometheus exporter
         labels:
           alias: 'otel-metrics'
   - job_name: 'tempo'

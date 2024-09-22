@@ -4,7 +4,7 @@ networks:
     external: true
 
 services:
-  otel-collector:
+  otelcol:
     image: otel/opentelemetry-collector-contrib:0.109.0
     restart: always
     networks:
@@ -19,10 +19,26 @@ services:
       - "55679:55679"  # zpages extension
     volumes:
       - type: bind
-        source: ./docker-compose/config/otelcol/config.yaml
+        source: /var/lib/docker/containers
+        target: /var/lib/docker/containers:ro
+      - type: bind
+        source: ./docker-compose/volume/otelcol/file_storage
+        target: /var/lib/otelcol/file_storage
+      - type: bind
+        source: ./docker-compose/config/otelcol/otelcol.yaml
         target: /etc/otelcol-contrib/config.yaml
-  #  depends_on:
-  #    - jaeger-all-in-one
+
+  loki:
+    image: grafana/loki:latest
+    networks:
+      hostnetwork:
+    ports:
+      - "33100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - type: bind
+        source: ./docker-compose/volume/loki
+        target: /loki
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.50.0
@@ -66,7 +82,7 @@ services:
         target: /etc/prometheus/prometheus.yml
     entrypoint: [ "/bin/prometheus", "--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--enable-feature=expand-external-labels" ]
     depends_on:
-      - otel-collector
+      - otelcol
       - cadvisor
 
   minio:

@@ -11,9 +11,15 @@ import (
 	"github.com/hakadoriya/z.go/logz/slogz"
 	"github.com/hakadoriya/z.go/otelz"
 	"github.com/hakadoriya/z.go/otelz/tracez"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	otelruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
+	"go.opentelemetry.io/otel/log/global"
+	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"google.golang.org/grpc/grpclog"
 
@@ -35,10 +41,25 @@ func ki(bytes uint64) uint64 {
 	return bytes / ki
 }
 
-func Generate(c *cliz.Command, args []string) error {
+func Generate(c *cliz.Command, args []string) (err error) {
 	ctx := c.Context()
 
 	grpclog.SetLoggerV2(grpclogz.NewGRPCLoggerV2(logs.Stdout.Logger))
+
+	var logExporter log.Exporter
+	_ = stdoutlog.New
+	_ = otlploggrpc.New
+	logExporter, err = otlploghttp.New(ctx)
+	if err != nil {
+		return errorz.Errorf("otlploghttp.New: %w", err)
+	}
+
+	processor := log.NewBatchProcessor(logExporter)
+	provider := log.NewLoggerProvider(log.WithProcessor(processor))
+	defer provider.Shutdown(context.Background())
+	global.SetLoggerProvider(provider)
+	logger := otelslog.NewLogger("app_or_package_name")
+	logger.ErrorContext(ctx, "hello world", slog.String("error", "error message"))
 
 	shutdown, err := otelz.SetupAutoExport(ctx, otelz.WithResourceOptions(resource.WithAttributes(attribute.String("service.name", consts.AppName))))
 	if err != nil {
