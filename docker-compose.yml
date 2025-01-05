@@ -1,0 +1,180 @@
+networks:
+  hostnetwork:
+    # If an error occurs "network hostnetwork declared as external, but could not be found", run:
+    #   $ docker network create hostnetwork
+    driver: bridge
+    external: true
+
+services:
+  otelcol:
+    # ref: https://hub.docker.com/r/otel/opentelemetry-collector-contrib/tags
+    image: otel/opentelemetry-collector-contrib:0.116.1
+    restart: always
+    networks:
+      hostnetwork:
+    ports:
+      - "1888:1888"    # pprof extension
+      - "8888:8888"    # Prometheus metrics exposed by the Collector
+      - "8889:8889"    # Prometheus exporter metrics
+      - "13133:13133"  # health_check extension
+      - "4317:4317"    # OTLP gRPC receiver
+      - "4318:4318"    # OTLP http receiver
+      - "55679:55679"  # zpages extension
+    volumes:
+      #- type: bind
+      #  source: /var/lib/docker/containers
+      #  target: /var/lib/docker/containers:ro
+      - type: bind
+        source: ./docker-compose/volume/otelcol/file_storage
+        target: /var/lib/otelcol/file_storage
+      - type: bind
+        source: ./docker-compose/config/otelcol/otelcol.yaml
+        target: /etc/otelcol-contrib/config.yaml
+    depends_on:
+      - loki
+
+  loki:
+    image: grafana/loki:latest
+    networks:
+      hostnetwork:
+    ports:
+      - "33100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - type: bind
+        source: ./docker-compose/volume/loki
+        target: /loki
+
+  cadvisor:
+    # ref: https://gcr.io/cadvisor/cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    #platform: linux/amd64
+    platform: linux/aarch64
+    # container_name: cadvisor
+    privileged: true
+    restart: always
+    networks:
+      hostnetwork:
+    ports:
+     - "38080:8080"
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/dev/disk/:/dev/disk:ro"
+      #- ${HOME}/.docker/run/docker.sock:/var/run/docker.sock:ro"
+
+  #jaeger-all-in-one:
+  #  image: jaegertracing/all-in-one:1.60
+  #  restart: always
+  #  networks:
+  #    - hostnetwork
+  #  ports:
+  #    - "16686:16686"  # Jaeger UI http://localhost:16686/
+  #  environment:
+  #    - COLLECTOR_OTLP_ENABLED=true
+
+  prometheus:
+    # ref: https://hub.docker.com/r/prom/prometheus/tags
+    image: prom/prometheus:v3.1.0
+    restart: always
+    networks:
+      hostnetwork:
+    ports:
+     - "39090:9090" # Prometheus UI http://localhost:39090/
+    volumes:
+      - type: bind
+        source: ./docker-compose/config/prometheus/prometheus.yaml
+        target: /etc/prometheus/prometheus.yml
+      - type: bind
+        source: ./docker-compose/volume/prometheus/tsdb
+        target: /data/prometheus/tsdb
+    entrypoint:
+      - "/bin/prometheus"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/data/prometheus/tsdb"
+      - "--enable-feature=expand-external-labels"
+      - "--web.enable-remote-write-receiver"
+    depends_on:
+      - otelcol
+      - cadvisor
+
+  minio:
+    # ref: https://hub.docker.com/r/minio/minio/tags
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z-cpuv1
+    restart: always
+    networks:
+      hostnetwork:
+    ports:
+     - 39001:9001 # Minio UI http://localhost:39001/
+    entrypoint: /bin/sh -c "mc mb --ignore-existing /data/minio/tempo ; minio server /data/minio --console-address ':9001'"
+    volumes:
+      - type: bind
+        source: ./docker-compose/volume/minio
+        target: /data/minio
+    environment:
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=password
+
+  tempo:
+    # ref: https://hub.docker.com/r/grafana/tempo/tags
+    image: &tempoImage grafana/tempo:2.6.1
+    restart: always
+    networks:
+      hostnetwork:
+    #ports:
+    # - 33200:3200
+    #command: "-target=scalable-single-binary -config.expand-env=true -config.file=/etc/tempo.yaml"
+    command: "-config.expand-env=true -config.file=/etc/tempo.yaml"
+    environment:
+      - PROMETHEUS_REMOTE_WRITE_ENDPOINT=http://prometheus:9090
+      - S3_BUCKET=tempo
+      - S3_ENDPOINT=minio:9000
+      - S3_ACCESS_KEY=root
+      - S3_SECRET_KEY=password
+    volumes:
+      - type: bind
+        source: ./docker-compose/config/tempo/tempo.yaml
+        target: /etc/tempo.yaml
+      - type: bind
+        source: ./docker-compose/volume/tempo
+        target: /var/tempo
+    depends_on:
+      - minio
+      - tempo-init
+  tempo-init:
+    image: *tempoImage
+    user: root
+    # Tempo runs as user 10001, and docker compose creates the volume as root.
+    # As such, we need to chown the volume in order for Tempo to start correctly.
+    entrypoint: sh -c "chown 10001:10001 /var/tempo && tail -f /dev/null"
+    volumes:
+      - type: bind
+        source: ./docker-compose/volume/tempo
+        target: /var/tempo
+    stop_grace_period: 1s
+
+  grafana:
+    # ref: https://hub.docker.com/r/grafana/grafana/tags
+    image: grafana/grafana:11.4.0
+    restart: always
+    networks:
+      hostnetwork:
+    ports:
+      - 33000:3000 # Grafana UI http://localhost:33000/
+    volumes:
+      - type: bind
+        source: ./docker-compose/config/grafana/datasources.yaml
+        target: /etc/grafana/provisioning/datasources/datasources.yaml
+      - type: bind
+        source: ./docker-compose/config/grafana/dashboards.yaml
+        target: /etc/grafana/provisioning/dashboards/main.yaml
+      - type: bind
+        source: ./docker-compose/config/grafana/dashboards
+        target: /var/lib/grafana/dashboards
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
