@@ -20,12 +20,14 @@ builds:
       - linux
       - windows
       - darwin
+    flags:
+      - -trimpath
     ldflags:
-      - -s -w -trimpath
+      - -s -w
       - -X github.com/hakadoriya/z.go/buildinfoz.buildVersion={{.Version}}
       - -X github.com/hakadoriya/z.go/buildinfoz.buildRevision={{.Commit}}
       - -X github.com/hakadoriya/z.go/buildinfoz.buildBranch={{.Branch}}
-      - -X github.com/hakadoriya/z.go/buildinfoz.buildTimestamp={{.Date}}
+      - -X github.com/hakadoriya/z.go/buildinfoz.buildTimestamp={{.CommitDate}}
 
 archives:
   - format: tar.gz
