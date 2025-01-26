@@ -113,6 +113,7 @@ func templateFuncMap(cfg *config.GenerateConfig) template.FuncMap {
 	}
 }
 
+//nolint:cyclop
 func Generate(ctx context.Context, packageSources source.PackageSourceSlice) error {
 	ctx, span := tracez.Start(ctx)
 	defer span.End()
@@ -126,6 +127,9 @@ func Generate(ctx context.Context, packageSources source.PackageSourceSlice) err
 
 	for _, packageSource := range packageSources {
 		if err := tracez.StartFuncWithSpanNameSuffix(ctx, "os.MkdirAll", func(_ context.Context) (err error) {
+			if cfg.GoTableFileOnly {
+				return nil
+			}
 			packageDirPath := filepath.Join(cfg.GoORMOutputPath, packageSource.SourceRelativePath)
 			return os.MkdirAll(packageDirPath, consts.Perm0o775)
 		}); err != nil {
@@ -145,6 +149,9 @@ func Generate(ctx context.Context, packageSources source.PackageSourceSlice) err
 
 			var tablesInFile []*TableInfo
 			for _, structSource := range fileSource.StructSources {
+				if cfg.GoTableFileOnly {
+					continue
+				}
 				tableInfo := BuildTableInfo(ctx, structSource)
 				tablesInFile = append(tablesInFile, tableInfo)
 				tablesInPackage = append(tablesInPackage, tableInfo)

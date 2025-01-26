@@ -32,7 +32,7 @@ func generateTableFile(ctx context.Context, fileSource *source.FileSource) (err 
 	defer dbGenFile.Close()
 
 	if err := fprintTableMethods(ctx, dbGenFile, fileSource); err != nil {
-		return errorz.Errorf("FprintTableMethods: %w", err)
+		return errorz.Errorf("fprintTableMethods: %w", err)
 	}
 
 	return nil
