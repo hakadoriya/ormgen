@@ -3,14 +3,14 @@ module github.com/hakadoriya/ormgen
 go 1.23.4
 
 require (
-	github.com/hakadoriya/z.go v0.0.1-0.20250108045954-8fa2a7f232b8
-	github.com/hakadoriya/z.go/grpcz v0.0.0-20250108045954-8fa2a7f232b8
-	github.com/hakadoriya/z.go/otelz v0.0.0-20250108045954-8fa2a7f232b8
-	go.opentelemetry.io/contrib/bridges/otelslog v0.8.0
-	go.opentelemetry.io/contrib/instrumentation/runtime v0.58.0
-	go.opentelemetry.io/otel v1.33.0
-	go.opentelemetry.io/otel/sdk v1.33.0
-	google.golang.org/grpc v1.69.2
+	github.com/hakadoriya/z.go v0.0.1-0.20250108194500-774a0f28892d
+	github.com/hakadoriya/z.go/grpcz v0.0.0-20250108194500-774a0f28892d
+	github.com/hakadoriya/z.go/otelz v0.0.0-20250108194500-774a0f28892d
+	go.opentelemetry.io/contrib/bridges/otelslog v0.9.0
+	go.opentelemetry.io/contrib/instrumentation/runtime v0.59.0
+	go.opentelemetry.io/otel v1.34.0
+	go.opentelemetry.io/otel/sdk v1.34.0
+	google.golang.org/grpc v1.70.0
 )
 
 require (
@@ -46,11 +46,11 @@ require (
 	go.opentelemetry.io/otel/exporters/stdout/stdoutlog v0.9.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.33.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.33.0 // indirect
-	go.opentelemetry.io/otel/log v0.9.0 // indirect
-	go.opentelemetry.io/otel/metric v1.33.0 // indirect
+	go.opentelemetry.io/otel/log v0.10.0 // indirect
+	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk/log v0.9.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.33.0 // indirect
-	go.opentelemetry.io/otel/trace v1.33.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.34.0 // indirect
+	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
