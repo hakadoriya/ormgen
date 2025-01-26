@@ -22,6 +22,9 @@ func generateEachPackage(ctx context.Context, ormoptPackageImportPath string, pa
 	defer span.End()
 
 	cfg := contexts.GenerateConfig(ctx)
+	if cfg.GoTableFileOnly {
+		return nil
+	}
 
 	// each package
 	eachPackageFileName := filepath.Base(strings.TrimSuffix(eachPackageTmpl, ".tmpl"))

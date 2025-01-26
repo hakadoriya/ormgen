@@ -22,6 +22,7 @@ type GenerateConfig struct {
 	GoPKTag                      string `cli:"go-pk-tag,                         env=ORMGEN_GO_PK_TAG,                         default=pk,          description=primary key annotation key for Go struct tag"`
 	GoHasOneTag                  string `cli:"go-has-one-tag,                    env=ORMGEN_GO_HAS_ONE_TAG,                    default=hasOne,      description=\"hasOne\" annotation key for Go struct tag"`
 	GoHasManyTag                 string `cli:"go-has-many-tag,                   env=ORMGEN_GO_HAS_MANY_TAG,                   default=hasMany,     description=\"hasMany\" annotation key for Go struct tag"`
+	GoTableFileOnly              bool   `cli:"go-table-file-only,                env=ORMGEN_GO_TABLE_FILE_ONLY,                default=false,       description=generate only table file"`
 	GoTableNameMethod            string `cli:"go-table-name-method,              env=ORMGEN_GO_TABLE_NAME_METHOD,              default=TableName,   description=method name for table"`
 	GoColumnNameMethodPrefix     string `cli:"go-column-name-method-prefix,      env=ORMGEN_GO_COLUMN_NAME_METHOD_PREFIX,      default=ColumnName_, description=method name for columns"`
 	GoColumnsNameMethod          string `cli:"go-columns-name-method,            env=ORMGEN_GO_COLUMNS_NAME_METHOD,            default=ColumnsName, description=method prefix for column"`

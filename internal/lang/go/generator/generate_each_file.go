@@ -22,6 +22,9 @@ func generateEachFile(ctx context.Context, ormoptPackageImportPath string, packa
 	defer span.End()
 
 	cfg := contexts.GenerateConfig(ctx)
+	if cfg.GoTableFileOnly {
+		return nil
+	}
 
 	// each file
 	eachFilePath := filepath.Join(cfg.GoORMOutputPath, fileSource.SourceRelativePath)

@@ -20,6 +20,9 @@ func generateORMOptFile(ctx context.Context) (ormoptPackageImportPath string, er
 	defer span.End()
 
 	cfg := contexts.GenerateConfig(ctx)
+	if cfg.GoTableFileOnly {
+		return "", nil
+	}
 
 	ormoptDirPath := filepath.Join(cfg.GoORMOutputPath, filepath.Base(filepath.Dir(ormoptTmpl)))
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "os.MkdirAll", func(_ context.Context) (err error) {
