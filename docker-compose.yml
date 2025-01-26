@@ -8,7 +8,7 @@ networks:
 services:
   otelcol:
     # ref: https://hub.docker.com/r/otel/opentelemetry-collector-contrib/tags
-    image: otel/opentelemetry-collector-contrib:0.116.1
+    image: otel/opentelemetry-collector-contrib:0.118.0
     restart: always
     networks:
       hostnetwork:
@@ -119,7 +119,7 @@ services:
 
   tempo:
     # ref: https://hub.docker.com/r/grafana/tempo/tags
-    image: &tempoImage grafana/tempo:2.6.1
+    image: &tempoImage grafana/tempo:2.7.0
     restart: always
     networks:
       hostnetwork:
