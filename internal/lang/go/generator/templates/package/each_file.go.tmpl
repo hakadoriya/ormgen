@@ -86,6 +86,20 @@ func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContex
 	}
 	return {{ $table.StructName | lowerFirst }}, nil
 }
+{{ if or (ne $.Dialect "sqlite3") }}
+const SelectForUpdate{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }} FOR UPDATE`
+
+func (s *_ORM) SelectForUpdate{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(SelectForUpdate{{ $table.StructName }}ByPKQuery)
+	row := queryerContext.QueryRowContext(ctx, SelectForUpdate{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
+	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
+	err := row.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $v.FieldName }}{{- end }})
+	if err != nil {
+		return nil, fmt.Errorf("row.Scan: %w", s.HandleError(ctx, err))
+	}
+	return {{ $table.StructName | lowerFirst }}, nil
+}
+{{ end -}}
 {{ range $i, $hasOneTagsKey := $table.HasOneTagsKeys -}}
 {{- /* map access by slice element */ -}}{{- $hasOneColumns := index $table.HasOneTags $hasOneTagsKey }}
 const Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }}`
@@ -100,6 +114,26 @@ func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Cont
 	}
 	return {{ $table.StructName | lowerFirst }}, nil
 }
+{{ if or (ne $.Dialect "sqlite3") }}
+const SelectForUpdate{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }} FOR UPDATE`
+
+func (s *_ORM) SelectForUpdate{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
+	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyResultOption(config)
+	}
+	query, args := config.ToSQL(SelectForUpdate{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ $currentIndex := len $hasOneColumns }}{{ add $currentIndex 1 }})
+	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	row := queryerContext.QueryRowContext(ctx, query, append([]interface{}{{print `{`}}{{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }}{{print `}`}}, args...)...)
+	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
+	err := row.Scan({{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $column.FieldName }}{{- end }})
+	if err != nil {
+		return nil, fmt.Errorf("row.Scan: %w", s.HandleError(ctx, err))
+	}
+	return {{ $table.StructName | lowerFirst }}, nil
+}
+{{ end -}}
 {{ end -}}
 {{ range $i, $hasManyTagsKey := $table.HasManyTagsKeys -}}
 {{- /* map access by slice element */ -}}{{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
@@ -134,6 +168,39 @@ func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Co
 	}
 	return {{ $table.StructName | lowerFirst }}Slice, nil
 }
+{{ if or (ne $.Dialect "sqlite3") }}
+const SelectForUpdate{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE ({{ placeholderInWhere $hasManyColumns "AND" 1 }}) FOR UPDATE`
+
+func (s *_ORM) SelectForUpdate{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
+	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyResultOption(config)
+	}
+	query, args := config.ToSQL(SelectForUpdate{{ $table.StructName }}By{{ $hasManyTagsKey }}Query, {{ $currentIndex := len $hasManyColumns }}{{ add $currentIndex 1 }})
+	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, append([]interface{}{{print `{`}}{{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }}{{ end }}{{print `}`}}, args...)...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var {{ $table.StructName | lowerFirst }}Slice {{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}
+	for rows.Next() {
+		{{ $table.TableName }} := new({{ $packageImportPath }}.{{ $table.StructName }})
+		err := rows.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.TableName }}.{{ $v.FieldName }}{{- end }})
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		{{ $table.StructName | lowerFirst }}Slice = append({{ $table.StructName | lowerFirst }}Slice, {{ $table.TableName }})
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	return {{ $table.StructName | lowerFirst }}Slice, nil
+}
+{{ end -}}
 {{ end }}
 const List{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
 
@@ -166,7 +233,39 @@ func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {
 	}
 	return {{ $table.StructName | lowerFirst }}Slice, nil
 }
+{{ if or (ne $.Dialect "sqlite3") }}
+const SelectForUpdate{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
 
+func (s *_ORM) SelectForUpdate{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
+	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyQueryOption(config)
+	}
+	query, args := config.ToSQL(SelectForUpdate{{ $table.StructName }}Query, 1)
+	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var {{ $table.StructName | lowerFirst }}Slice {{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}
+	for rows.Next() {
+		{{ $table.TableName }} := new({{ $packageImportPath }}.{{ $table.StructName }})
+		err := rows.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.TableName }}.{{ $v.FieldName }}{{- end }})
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		{{ $table.StructName | lowerFirst }}Slice = append({{ $table.StructName | lowerFirst }}Slice, {{ $table.TableName }})
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	return {{ $table.StructName | lowerFirst }}Slice, nil
+}
+{{ end }}
 const Update{{ $table.StructName }}Query = `UPDATE {{ $table.TableName }} SET ({{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) = ({{ placeholder $table.NotPrimaryKeys 1 }}) WHERE {{ $currentIndex := len $table.NotPrimaryKeys }}{{ $nextIndex := add $currentIndex 1 }}{{ placeholderInWhere .PrimaryKeys "AND" $nextIndex }}`
 
 func (s *_ORM) Update{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
