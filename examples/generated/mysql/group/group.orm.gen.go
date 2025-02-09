@@ -87,6 +87,19 @@ func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerCo
 	return group, nil
 }
 
+const SelectForUpdateGroupByPKQuery = `SELECT id, name FROM group WHERE id = ? FOR UPDATE`
+
+func (s *_ORM) SelectForUpdateGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error) {
+	ormopt.LoggerFromContext(ctx).Debug(SelectForUpdateGroupByPKQuery)
+	row := queryerContext.QueryRowContext(ctx, SelectForUpdateGroupByPKQuery, id)
+	group := new(group_.Group)
+	err := row.Scan(&group.ID, &group.Name)
+	if err != nil {
+		return nil, fmt.Errorf("row.Scan: %w", s.HandleError(ctx, err))
+	}
+	return group, nil
+}
+
 const ListGroupQuery = `SELECT id, name FROM group`
 
 func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
@@ -96,6 +109,38 @@ func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormopt.QueryerConte
 		o.ApplyQueryOption(config)
 	}
 	query, args := config.ToSQL(ListGroupQuery, 1)
+	ormopt.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var groupSlice group_.GroupSlice
+	for rows.Next() {
+		group := new(group_.Group)
+		err := rows.Scan(&group.ID, &group.Name)
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		groupSlice = append(groupSlice, group)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	return groupSlice, nil
+}
+
+const SelectForUpdateGroupQuery = `SELECT id, name FROM group`
+
+func (s *_ORM) SelectForUpdateGroup(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
+	config := new(ormopt.QueryConfig)
+	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyQueryOption(config)
+	}
+	query, args := config.ToSQL(SelectForUpdateGroupQuery, 1)
 	ormopt.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
