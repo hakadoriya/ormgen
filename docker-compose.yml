@@ -8,7 +8,7 @@ networks:
 services:
   otelcol:
     # ref: https://hub.docker.com/r/otel/opentelemetry-collector-contrib/tags
-    image: otel/opentelemetry-collector-contrib:0.118.0
+    image: otel/opentelemetry-collector-contrib:0.119.0
     restart: always
     networks:
       hostnetwork:
@@ -157,7 +157,7 @@ services:
 
   grafana:
     # ref: https://hub.docker.com/r/grafana/grafana/tags
-    image: grafana/grafana:11.4.0
+    image: grafana/grafana:11.5.1
     restart: always
     networks:
       hostnetwork:
