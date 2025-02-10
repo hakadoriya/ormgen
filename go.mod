@@ -3,9 +3,9 @@ module github.com/hakadoriya/ormgen
 go 1.23.4
 
 require (
-	github.com/hakadoriya/z.go v0.0.1-0.20250108194500-774a0f28892d
-	github.com/hakadoriya/z.go/grpcz v0.0.0-20250108194500-774a0f28892d
-	github.com/hakadoriya/z.go/otelz v0.0.0-20250108194500-774a0f28892d
+	github.com/hakadoriya/z.go v0.0.1-0.20250209140321-e92fccb23140
+	github.com/hakadoriya/z.go/grpcz v0.0.0-20250209140321-e92fccb23140
+	github.com/hakadoriya/z.go/otelz v0.0.0-20250209140321-e92fccb23140
 	go.opentelemetry.io/contrib/bridges/otelslog v0.9.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.59.0
 	go.opentelemetry.io/otel v1.34.0
