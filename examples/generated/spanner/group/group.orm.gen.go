@@ -87,11 +87,11 @@ func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerCo
 	return group, nil
 }
 
-const SelectForUpdateGroupByPKQuery = `SELECT id, name FROM group WHERE id = ? FOR UPDATE`
+const LockGroupByPKQuery = `SELECT id, name FROM group WHERE id = ? FOR UPDATE`
 
-func (s *_ORM) SelectForUpdateGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error) {
-	ormopt.LoggerFromContext(ctx).Debug(SelectForUpdateGroupByPKQuery)
-	row := queryerContext.QueryRowContext(ctx, SelectForUpdateGroupByPKQuery, id)
+func (s *_ORM) LockGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error) {
+	ormopt.LoggerFromContext(ctx).Debug(LockGroupByPKQuery)
+	row := queryerContext.QueryRowContext(ctx, LockGroupByPKQuery, id)
 	group := new(group_.Group)
 	err := row.Scan(&group.ID, &group.Name)
 	if err != nil {
@@ -132,15 +132,15 @@ func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormopt.QueryerConte
 	return groupSlice, nil
 }
 
-const SelectForUpdateGroupQuery = `SELECT id, name FROM group`
+const LockGroupQuery = `SELECT id, name FROM group`
 
-func (s *_ORM) SelectForUpdateGroup(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
+func (s *_ORM) LockGroup(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}
-	query, args := config.ToSQL(SelectForUpdateGroupQuery, 1)
+	query, args := config.ToSQL(LockGroupQuery, 1)
 	ormopt.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
