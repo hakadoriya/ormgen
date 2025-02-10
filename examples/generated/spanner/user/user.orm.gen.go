@@ -87,11 +87,11 @@ func (s *_ORM) GetUserByPK(ctx context.Context, queryerContext ormopt.QueryerCon
 	return user, nil
 }
 
-const SelectForUpdateUserByPKQuery = `SELECT user_id, username, address, group_id FROM user WHERE user_id = ? FOR UPDATE`
+const LockUserByPKQuery = `SELECT user_id, username, address, group_id FROM user WHERE user_id = ? FOR UPDATE`
 
-func (s *_ORM) SelectForUpdateUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) (*user_.User, error) {
-	ormopt.LoggerFromContext(ctx).Debug(SelectForUpdateUserByPKQuery)
-	row := queryerContext.QueryRowContext(ctx, SelectForUpdateUserByPKQuery, user_id)
+func (s *_ORM) LockUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) (*user_.User, error) {
+	ormopt.LoggerFromContext(ctx).Debug(LockUserByPKQuery)
+	row := queryerContext.QueryRowContext(ctx, LockUserByPKQuery, user_id)
 	user := new(user_.User)
 	err := row.Scan(&user.UserID, &user.Username, &user.Address, &user.GroupID)
 	if err != nil {
@@ -113,15 +113,15 @@ func (s *_ORM) GetUserByUsername(ctx context.Context, queryerContext ormopt.Quer
 	return user, nil
 }
 
-const SelectForUpdateUserByUsernameQuery = `SELECT user_id, username, address, group_id FROM user WHERE username = ? FOR UPDATE`
+const LockUserByUsernameQuery = `SELECT user_id, username, address, group_id FROM user WHERE username = ? FOR UPDATE`
 
-func (s *_ORM) SelectForUpdateUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string, opts ...ormopt.ResultOption) (*user_.User, error) {
+func (s *_ORM) LockUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string, opts ...ormopt.ResultOption) (*user_.User, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyResultOption(config)
 	}
-	query, args := config.ToSQL(SelectForUpdateUserByUsernameQuery, 2)
+	query, args := config.ToSQL(LockUserByUsernameQuery, 2)
 	ormopt.LoggerFromContext(ctx).Debug(query)
 	row := queryerContext.QueryRowContext(ctx, query, append([]interface{}{username}, args...)...)
 	user := new(user_.User)
@@ -164,15 +164,15 @@ func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext 
 	return userSlice, nil
 }
 
-const SelectForUpdateUserByUsernameAndAddressQuery = `SELECT user_id, username, address, group_id FROM user WHERE (username = ? AND address = ?) FOR UPDATE`
+const LockUserByUsernameAndAddressQuery = `SELECT user_id, username, address, group_id FROM user WHERE (username = ? AND address = ?) FOR UPDATE`
 
-func (s *_ORM) SelectForUpdateUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
+func (s *_ORM) LockUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyResultOption(config)
 	}
-	query, args := config.ToSQL(SelectForUpdateUserByUsernameAndAddressQuery, 3)
+	query, args := config.ToSQL(LockUserByUsernameAndAddressQuery, 3)
 	ormopt.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, append([]interface{}{username, address}, args...)...)
 	if err != nil {
@@ -228,15 +228,15 @@ func (s *_ORM) ListUser(ctx context.Context, queryerContext ormopt.QueryerContex
 	return userSlice, nil
 }
 
-const SelectForUpdateUserQuery = `SELECT user_id, username, address, group_id FROM user`
+const LockUserQuery = `SELECT user_id, username, address, group_id FROM user`
 
-func (s *_ORM) SelectForUpdateUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
+func (s *_ORM) LockUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}
-	query, args := config.ToSQL(SelectForUpdateUserQuery, 1)
+	query, args := config.ToSQL(LockUserQuery, 1)
 	ormopt.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -378,11 +378,11 @@ func (s *_ORM) GetAdminUserByPK(ctx context.Context, queryerContext ormopt.Query
 	return adminUser, nil
 }
 
-const SelectForUpdateAdminUserByPKQuery = `SELECT admin_user_id, username, group_id FROM admin_user WHERE admin_user_id = ? FOR UPDATE`
+const LockAdminUserByPKQuery = `SELECT admin_user_id, username, group_id FROM admin_user WHERE admin_user_id = ? FOR UPDATE`
 
-func (s *_ORM) SelectForUpdateAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
-	ormopt.LoggerFromContext(ctx).Debug(SelectForUpdateAdminUserByPKQuery)
-	row := queryerContext.QueryRowContext(ctx, SelectForUpdateAdminUserByPKQuery, admin_user_id)
+func (s *_ORM) LockAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
+	ormopt.LoggerFromContext(ctx).Debug(LockAdminUserByPKQuery)
+	row := queryerContext.QueryRowContext(ctx, LockAdminUserByPKQuery, admin_user_id)
 	adminUser := new(user_.AdminUser)
 	err := row.Scan(&adminUser.AdminUserID, &adminUser.Username, &adminUser.GroupID)
 	if err != nil {
@@ -423,15 +423,15 @@ func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormopt.QueryerC
 	return adminUserSlice, nil
 }
 
-const SelectForUpdateAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`
+const LockAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`
 
-func (s *_ORM) SelectForUpdateAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
+func (s *_ORM) LockAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
 		o.ApplyQueryOption(config)
 	}
-	query, args := config.ToSQL(SelectForUpdateAdminUserQuery, 1)
+	query, args := config.ToSQL(LockAdminUserQuery, 1)
 	ormopt.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
