@@ -17,6 +17,7 @@ import (
 	"github.com/hakadoriya/ormgen/pkg/apperr"
 )
 
+//nolint:cyclop
 func newParseWalkDir(ctx context.Context, sourcePath string, fileExt string, packageSources *PackageSourceSlice) func(path string, d fs.DirEntry, err error) error {
 	walkDir := func(filePath string, d fs.DirEntry, err error) error {
 		ctx, span := tracez.StartWithSpanNameSuffix(ctx, "walkDir")
@@ -36,10 +37,10 @@ func newParseWalkDir(ctx context.Context, sourcePath string, fileExt string, pac
 		}
 
 		cfg := contexts.GenerateConfig(ctx)
-		packageImportPath := cfg.GoORMStructPackageImportPath
-		if packageImportPath == "" {
+		ormStructPackageImportPath := cfg.GoORMStructPackageImportPath
+		if ormStructPackageImportPath == "" && !cfg.GoTableFileOnly /* if table file only, don't need to find package import path */ {
 			if err := tracez.StartFuncWithSpanNameSuffix(ctx, "buildz.FindPackageImportPath", func(_ context.Context) (err error) {
-				packageImportPath, err = buildz.FindPackageImportPath(sourcePath)
+				ormStructPackageImportPath, err = buildz.FindPackageImportPath(sourcePath)
 				//nolint:wrapcheck
 				return err
 			}); err != nil {
@@ -59,7 +60,7 @@ func newParseWalkDir(ctx context.Context, sourcePath string, fileExt string, pac
 		packageSources.AddPackageSource(&PackageSource{
 			PackageName:        fileSource.PackageName,
 			DirPath:            filepath.Dir(fileSource.FilePath),
-			PackageImportPath:  filepath.Join(packageImportPath, filepath.Dir(fileSource.SourceRelativePath)),
+			PackageImportPath:  filepath.Join(ormStructPackageImportPath, filepath.Dir(fileSource.SourceRelativePath)),
 			SourceRelativePath: filepath.Dir(fileSource.SourceRelativePath),
 			FileSources:        FileSourceSlice{fileSource},
 		})
