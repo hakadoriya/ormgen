@@ -60,9 +60,9 @@ func parseFile(ctx context.Context, sourcePath, filePath string) (*FileSource, e
 						case *ast.TypeSpec:
 							typeSpec := nod
 							position := fset.Position(typeSpec.Pos())
-							switch typ := typeSpec.Type.(type) {
+							switch typeSpecType := typeSpec.Type.(type) {
 							case *ast.StructType:
-								structType := typ
+								structType := typeSpecType
 								if structHasGoColumnTag(ctx, structType) {
 									contexts.Stdout(ctx).Debug(fmt.Sprintf("found struct source: file=%s, tag=%s:%s, type=%s", position, cfg.GoColumnTag, matches[_GoColumnTagCommentLineRegexTagNameIndex], typeSpec.Name.Name))
 									structSources = append(structSources, &StructSource{
@@ -76,7 +76,7 @@ func parseFile(ctx context.Context, sourcePath, filePath string) (*FileSource, e
 								}
 								return false
 							default:
-								err = errorz.Errorf("unexpected type has comment annotation: file=%s, tag=%s:%s, type=%s: %w", position, cfg.GoColumnTag, matches[_GoColumnTagCommentLineRegexTagNameIndex], typ, apperr.ErrInvalidAnnotation)
+								err = errorz.Errorf("unexpected type has comment annotation: file=%s, tag=%s:%s, type=%s: %w", position, cfg.GoColumnTag, matches[_GoColumnTagCommentLineRegexTagNameIndex], typeSpecType, apperr.ErrInvalidAnnotation)
 								return false
 							}
 						default:
