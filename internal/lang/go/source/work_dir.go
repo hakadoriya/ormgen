@@ -17,6 +17,7 @@ import (
 	"github.com/hakadoriya/ormgen/pkg/apperr"
 )
 
+//nolint:cyclop
 func newParseWalkDir(ctx context.Context, sourcePath string, fileExt string, packageSources *PackageSourceSlice) func(path string, d fs.DirEntry, err error) error {
 	walkDir := func(filePath string, d fs.DirEntry, err error) error {
 		ctx, span := tracez.StartWithSpanNameSuffix(ctx, "walkDir")
