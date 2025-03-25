@@ -119,7 +119,7 @@ services:
 
   tempo:
     # ref: https://hub.docker.com/r/grafana/tempo/tags
-    image: &tempoImage grafana/tempo:2.7.1
+    image: &tempoImage grafana/tempo:2.7.2
     restart: always
     networks:
       hostnetwork:
@@ -157,7 +157,7 @@ services:
 
   grafana:
     # ref: https://hub.docker.com/r/grafana/grafana/tags
-    image: grafana/grafana:11.5.2
+    image: grafana/grafana:11.6.0
     restart: always
     networks:
       hostnetwork:
