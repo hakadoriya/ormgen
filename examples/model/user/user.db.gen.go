@@ -4,6 +4,11 @@
 
 package user
 
+import (
+	"strings"
+	"fmt"
+)
+
 func (s *User) TableName() string {
 	return "user"
 }
@@ -54,6 +59,19 @@ func (s UserSlice) ColumnName_GroupID() string {
 	return "group_id"
 }
 
+func (s UserSlice) MapByPK() map[string]*User {
+	result := make(map[string]*User)
+	for _, v := range s {
+		pkStringSlice := []string{fmt.Sprint(v.UserID)}
+		pk := strings.Join(pkStringSlice, "-")
+		if _, ok := result[pk]; ok {
+			panic(fmt.Errorf("duplicate primary key: table=%T, pk=%s, one=%v, other=%v", v, pk, v, result[pk]))
+		}
+		result[pk] = v
+	}
+	return result
+}
+
 func (s *AdminUser) TableName() string {
 	return "admin_user"
 }
@@ -94,4 +112,17 @@ func (s AdminUserSlice) ColumnName_Username() string {
 
 func (s AdminUserSlice) ColumnName_GroupID() string {
 	return "group_id"
+}
+
+func (s AdminUserSlice) MapByPK() map[string]*AdminUser {
+	result := make(map[string]*AdminUser)
+	for _, v := range s {
+		pkStringSlice := []string{fmt.Sprint(v.AdminUserID)}
+		pk := strings.Join(pkStringSlice, "-")
+		if _, ok := result[pk]; ok {
+			panic(fmt.Errorf("duplicate primary key: table=%T, pk=%s, one=%v, other=%v", v, pk, v, result[pk]))
+		}
+		result[pk] = v
+	}
+	return result
 }

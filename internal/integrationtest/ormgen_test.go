@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/hakadoriya/ormgen/examples/generated/mysql/ormcommon"
 	"github.com/hakadoriya/ormgen/examples/generated/postgres/ormopt"
 	"github.com/hakadoriya/ormgen/examples/generated/postgres/user"
 	model_user "github.com/hakadoriya/ormgen/examples/model/user"
@@ -90,7 +91,7 @@ func TestListUser(t *testing.T) {
 		queryerContext := newTestQueryerContext()
 		orm := user.NewORM()
 		buf := bytes.NewBuffer(nil)
-		ctx := ormopt.LoggerWithContext(context.Background(), slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
+		ctx := ormcommon.LoggerWithContext(context.Background(), slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
 
 		{
 			_, err := orm.ListUser(ctx, queryerContext,
@@ -128,7 +129,7 @@ func TestBulkInsertUser(t *testing.T) {
 		queryerContext := newTestQueryerContext()
 		orm := user.NewORM()
 		buf := bytes.NewBuffer(nil)
-		ctx := ormopt.LoggerWithContext(context.Background(), slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
+		ctx := ormcommon.LoggerWithContext(context.Background(), slog.New(slog.NewTextHandler(buf, &slog.HandlerOptions{Level: slog.LevelDebug})))
 
 		user.DefaultBulkInsertMaxPlaceholdersPerQuery = 50
 		users := func() []*model_user.User {

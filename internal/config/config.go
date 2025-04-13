@@ -27,6 +27,9 @@ type GenerateConfig struct {
 	GoColumnNameMethodPrefix     string `cli:"go-column-name-method-prefix,      env=ORMGEN_GO_COLUMN_NAME_METHOD_PREFIX,      default=ColumnName_, description=method name for columns"`
 	GoColumnsNameMethod          string `cli:"go-columns-name-method,            env=ORMGEN_GO_COLUMNS_NAME_METHOD,            default=ColumnsName, description=method prefix for column"`
 	GoSliceTypeSuffix            string `cli:"go-slice-type-suffix,              env=ORMGEN_GO_SLICE_TYPE_SUFFIX,              default=Slice,       description=suffix for slice type"`
+	GoPKsMethod                  string `cli:"go-pks-method,                     env=ORMGEN_GO_PKS_METHOD,                     default=PKs,         description=method name for primary keys"`
+	GoMapByPKMethod              string `cli:"go-map-by-pk-method,               env=ORMGEN_GO_MAP_BY_PK_METHOD,               default=MapByPK,     description=method name for map by primary keys"`
+	GoPKConcatenationSeparator   string `cli:"go-pk-concatenation-separator,     env=ORMGEN_GO_PK_CONCATENATION_SEPARATOR,     default=-,           description=separator for primary keys"`
 	GoORMOutputPath              string `cli:"go-orm-output-path,                env=ORMGEN_GO_ORM_OUTPUT_PATH,                default=ormgen,      description=output path of ORM."`
 	GoORMOutputPackageImportPath string `cli:"go-orm-output-package-import-path, env=ORMGEN_GO_ORM_OUTPUT_PACKAGE_IMPORT_PATH, default=,            description=package import path of ORM output directory. If empty, try to detect automatically."`
 	GoORMPackageName             string `cli:"go-orm-package-name,               env=ORMGEN_GO_ORM_PACKAGE_NAME,               default=,            description=package name for ORM. If empty, use the base name of the output path."`

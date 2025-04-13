@@ -17,7 +17,7 @@ import (
 	"github.com/hakadoriya/ormgen/internal/logs"
 )
 
-func generateEachPackage(ctx context.Context, ormoptPackageImportPath string, packageName string, packageSource *source.PackageSource, tablesInPackage []*TableInfo) error {
+func generateEachPackage(ctx context.Context, ormcommonPackageImportPath string, ormoptPackageImportPath string, packageName string, packageSource *source.PackageSource, tablesInPackage []*TableInfo) error {
 	ctx, span := tracez.Start(ctx)
 	defer span.End()
 
@@ -50,13 +50,14 @@ func generateEachPackage(ctx context.Context, ormoptPackageImportPath string, pa
 	eachPackageFileBuf := bytes.NewBuffer(nil)
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "eachPackageTemplate.Execute", func(_ context.Context) (err error) {
 		return eachPackageTemplate.Execute(eachPackageFileBuf, FileInfo{
-			SourceFile:              packageSource.SourceRelativePath,
-			PackageName:             packageName,
-			PackageImportPath:       packageSource.PackageImportPath,
-			ORMOptPackageImportPath: ormoptPackageImportPath,
-			Dialect:                 cfg.Dialect,
-			SliceTypeSuffix:         cfg.GoSliceTypeSuffix,
-			Tables:                  tablesInPackage,
+			SourceFile:                 packageSource.SourceRelativePath,
+			PackageName:                packageName,
+			PackageImportPath:          packageSource.PackageImportPath,
+			ORMCommonPackageImportPath: ormcommonPackageImportPath,
+			ORMOptPackageImportPath:    ormoptPackageImportPath,
+			Dialect:                    cfg.Dialect,
+			SliceTypeSuffix:            cfg.GoSliceTypeSuffix,
+			Tables:                     tablesInPackage,
 		})
 	}); err != nil {
 		return errorz.Errorf("eachPackageTemplate.Execute: %w", err)

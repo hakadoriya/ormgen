@@ -15,20 +15,27 @@ import (
 	"github.com/hakadoriya/ormgen/internal/logs"
 )
 
-func generateORMOptFile(ctx context.Context) (ormoptPackageImportPath string, err error) {
+func generateORMOptFile(ctx context.Context) (ormcommonPackageImportPath string, ormoptPackageImportPath string, err error) {
 	ctx, span := tracez.Start(ctx)
 	defer span.End()
 
 	cfg := contexts.GenerateConfig(ctx)
 	if cfg.GoTableFileOnly {
-		return "", nil
+		return "", "", nil
 	}
 
-	ormoptDirPath := filepath.Join(cfg.GoORMOutputPath, filepath.Base(filepath.Dir(ormoptTmpl)))
+	ormcommonDirPath := filepath.Join(cfg.GoORMOutputPath, filepath.Base(filepath.Dir(ormcommonFilename)))
+	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "os.MkdirAll", func(_ context.Context) (err error) {
+		return os.MkdirAll(ormcommonDirPath, consts.Perm0o775)
+	}); err != nil {
+		return "", "", errorz.Errorf("os.MkdirAll: %w", err)
+	}
+
+	ormoptDirPath := filepath.Join(cfg.GoORMOutputPath, filepath.Base(filepath.Dir(ormoptFilename)))
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "os.MkdirAll", func(_ context.Context) (err error) {
 		return os.MkdirAll(ormoptDirPath, consts.Perm0o775)
 	}); err != nil {
-		return "", errorz.Errorf("os.MkdirAll: %w", err)
+		return "", "", errorz.Errorf("os.MkdirAll: %w", err)
 	}
 
 	ormgenPackageImportPath := cfg.GoORMOutputPackageImportPath
@@ -38,12 +45,42 @@ func generateORMOptFile(ctx context.Context) (ormoptPackageImportPath string, er
 			//nolint:wrapcheck
 			return err
 		}); err != nil {
-			return "", errorz.Errorf("buildz.FindPackageImportPath: %w", err)
+			return "", "", errorz.Errorf("buildz.FindPackageImportPath: %w", err)
 		}
 	}
 
 	// common file
-	ormoptFilePath := filepath.Join(ormoptDirPath, filepath.Base(ormoptTmpl))
+	ormcommonFilePath := filepath.Join(ormcommonDirPath, filepath.Base(ormcommonFilename))
+	logs.Stdout.Debug("create file: file=" + ormcommonFilePath)
+	var ormcommonFile *os.File
+	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "os.Create", func(_ context.Context) (err error) {
+		ormcommonFile, err = os.Create(strings.TrimSuffix(ormcommonFilePath, ".go") + ".orm.gen.go")
+		//nolint:wrapcheck
+		return err
+	}); err != nil {
+		return "", "", errorz.Errorf("os.Create: %w", err)
+	}
+	defer ormcommonFile.Close()
+
+	var optcommonFileContent []byte
+	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "templates.ReadFile", func(_ context.Context) (err error) {
+		optcommonFileContent, err = templates.ReadFile(ormcommonFilename)
+		//nolint:wrapcheck
+		return err
+	}); err != nil {
+		return "", "", errorz.Errorf("templates.ReadFile: %w", err)
+	}
+
+	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "ormcommonFile.Write", func(_ context.Context) (err error) {
+		_, err = ormcommonFile.Write(optcommonFileContent)
+		//nolint:wrapcheck
+		return err
+	}); err != nil {
+		return "", "", errorz.Errorf("ormcommonFile.Write: %w", err)
+	}
+
+	// opt file
+	ormoptFilePath := filepath.Join(ormoptDirPath, filepath.Base(ormoptFilename))
 	logs.Stdout.Debug("create file: file=" + ormoptFilePath)
 	var ormoptFile *os.File
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "os.Create", func(_ context.Context) (err error) {
@@ -51,28 +88,28 @@ func generateORMOptFile(ctx context.Context) (ormoptPackageImportPath string, er
 		//nolint:wrapcheck
 		return err
 	}); err != nil {
-		return "", errorz.Errorf("os.Create: %w", err)
+		return "", "", errorz.Errorf("os.Create: %w", err)
 	}
 	defer ormoptFile.Close()
 
-	var fileContent []byte
+	var ormoptFileContent []byte
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "templates.ReadFile", func(_ context.Context) (err error) {
-		fileContent, err = templates.ReadFile(ormoptTmpl)
+		ormoptFileContent, err = templates.ReadFile(ormoptFilename)
 		//nolint:wrapcheck
 		return err
 	}); err != nil {
-		return "", errorz.Errorf("templates.ReadFile: %w", err)
+		return "", "", errorz.Errorf("templates.ReadFile: %w", err)
 	}
 
-	fileContent = append([]byte(consts.GeneratedFileHeader+"\n"), fileContent...)
+	ormoptFileContent = append([]byte(consts.GeneratedFileHeader+"\n"), ormoptFileContent...)
 
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "ormoptFile.Write", func(_ context.Context) (err error) {
-		_, err = ormoptFile.Write(fileContent)
+		_, err = ormoptFile.Write(ormoptFileContent)
 		//nolint:wrapcheck
 		return err
 	}); err != nil {
-		return "", errorz.Errorf("commonFile.Write: %w", err)
+		return "", "", errorz.Errorf("commonFile.Write: %w", err)
 	}
 
-	return filepath.Join(ormgenPackageImportPath, filepath.Base(ormoptDirPath)), nil
+	return filepath.Join(ormgenPackageImportPath, filepath.Base(ormcommonDirPath)), filepath.Join(ormgenPackageImportPath, filepath.Base(ormoptDirPath)), nil
 }
