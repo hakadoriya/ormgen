@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	ormcommon "github.com/hakadoriya/ormgen/examples/generated/spanner/ormcommon"
 	ormopt "github.com/hakadoriya/ormgen/examples/generated/spanner/ormopt"
 
 	group_ "github.com/hakadoriya/ormgen/examples/model/group"
@@ -16,7 +17,7 @@ import (
 const InsertGroupQuery = `INSERT INTO group (id, name) VALUES (?, ?)`
 
 func (s *_ORM) InsertGroup(ctx context.Context, queryerContext ormopt.QueryerContext, group *group_.Group) error {
-	ormopt.LoggerFromContext(ctx).Debug(InsertGroupQuery)
+	ormcommon.LoggerFromContext(ctx).Debug(InsertGroupQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertGroupQuery, group.ID, group.Name)
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))
@@ -63,7 +64,7 @@ func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormopt.Querye
 		}
 
 		query := BulkInsertGroupQueryPrefix + strings.Join(placeholders, ", ")
-		ormopt.LoggerFromContext(ctx).Debug(query)
+		ormcommon.LoggerFromContext(ctx).Debug(query)
 
 		_, err := queryerContext.ExecContext(ctx, query, args...)
 		if err != nil {
@@ -77,7 +78,7 @@ func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormopt.Querye
 const GetGroupByPKQuery = `SELECT id, name FROM group WHERE id = ?`
 
 func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error) {
-	ormopt.LoggerFromContext(ctx).Debug(GetGroupByPKQuery)
+	ormcommon.LoggerFromContext(ctx).Debug(GetGroupByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetGroupByPKQuery, id)
 	group := new(group_.Group)
 	err := row.Scan(&group.ID, &group.Name)
@@ -90,7 +91,7 @@ func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerCo
 const LockGroupByPKQuery = `SELECT id, name FROM group WHERE id = ? FOR UPDATE`
 
 func (s *_ORM) LockGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error) {
-	ormopt.LoggerFromContext(ctx).Debug(LockGroupByPKQuery)
+	ormcommon.LoggerFromContext(ctx).Debug(LockGroupByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, LockGroupByPKQuery, id)
 	group := new(group_.Group)
 	err := row.Scan(&group.ID, &group.Name)
@@ -109,7 +110,7 @@ func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormopt.QueryerConte
 		o.ApplyQueryOption(config)
 	}
 	query, args := config.ToSQL(ListGroupQuery, 1)
-	ormopt.LoggerFromContext(ctx).Debug(query)
+	ormcommon.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
@@ -141,7 +142,7 @@ func (s *_ORM) LockGroup(ctx context.Context, queryerContext ormopt.QueryerConte
 		o.ApplyQueryOption(config)
 	}
 	query, args := config.ToSQL(LockGroupQuery, 1)
-	ormopt.LoggerFromContext(ctx).Debug(query)
+	ormcommon.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
@@ -167,7 +168,7 @@ func (s *_ORM) LockGroup(ctx context.Context, queryerContext ormopt.QueryerConte
 const UpdateGroupQuery = `UPDATE group SET (name) = (?) WHERE id = ?`
 
 func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormopt.QueryerContext, group *group_.Group) error {
-	ormopt.LoggerFromContext(ctx).Debug(UpdateGroupQuery)
+	ormcommon.LoggerFromContext(ctx).Debug(UpdateGroupQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateGroupQuery, group.Name, group.ID)
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))
@@ -178,7 +179,7 @@ func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormopt.QueryerCon
 const DeleteGroupByPKQuery = `DELETE FROM group WHERE id = ?`
 
 func (s *_ORM) DeleteGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) error {
-	ormopt.LoggerFromContext(ctx).Debug(DeleteGroupByPKQuery)
+	ormcommon.LoggerFromContext(ctx).Debug(DeleteGroupByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteGroupByPKQuery, id)
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))

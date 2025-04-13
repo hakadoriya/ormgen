@@ -60,7 +60,7 @@ lint:  ## Run secretlint, go mod tidy, golangci-lint
 	time go-mod-all tidy
 	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
-	time golangci-lint run --fix --max-same-issues=10 --print-resources-usage --show-stats --sort-results --timeout=5m --verbose
+	time golangci-lint run --fix --max-same-issues=10 --print-resources-usage --show-stats --timeout=5m --verbose
 	go fmt ./...  # golangci-lint changes files, so need to run go fmt again
 	# diff
 	git diff --exit-code

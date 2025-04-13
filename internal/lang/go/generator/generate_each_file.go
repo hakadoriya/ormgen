@@ -17,7 +17,7 @@ import (
 	"github.com/hakadoriya/ormgen/internal/logs"
 )
 
-func generateEachFile(ctx context.Context, ormoptPackageImportPath string, packageName string, packageSource *source.PackageSource, fileSource *source.FileSource, tablesInFile []*TableInfo) error {
+func generateEachFile(ctx context.Context, ormcommonPackageImportPath string, ormoptPackageImportPath string, packageName string, packageSource *source.PackageSource, fileSource *source.FileSource, tablesInFile []*TableInfo) error {
 	ctx, span := tracez.Start(ctx)
 	defer span.End()
 
@@ -50,13 +50,14 @@ func generateEachFile(ctx context.Context, ormoptPackageImportPath string, packa
 
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "eachFileTemplate.Execute", func(_ context.Context) (err error) {
 		return eachFileTemplate.Execute(eachFileBuf, FileInfo{
-			SourceFile:              fileSource.SourceRelativePath,
-			PackageName:             packageName,
-			PackageImportPath:       packageSource.PackageImportPath,
-			ORMOptPackageImportPath: ormoptPackageImportPath,
-			Dialect:                 cfg.Dialect,
-			SliceTypeSuffix:         cfg.GoSliceTypeSuffix,
-			Tables:                  tablesInFile,
+			SourceFile:                 fileSource.SourceRelativePath,
+			PackageName:                packageName,
+			PackageImportPath:          packageSource.PackageImportPath,
+			ORMCommonPackageImportPath: ormcommonPackageImportPath,
+			ORMOptPackageImportPath:    ormoptPackageImportPath,
+			Dialect:                    cfg.Dialect,
+			SliceTypeSuffix:            cfg.GoSliceTypeSuffix,
+			Tables:                     tablesInFile,
 		})
 	}); err != nil {
 		return errorz.Errorf("eachFileTemplate.Execute: %w", err)

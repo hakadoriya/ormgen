@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Deprecated: Use ormcommon.QueryerContext instead.
 type QueryerContext interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
@@ -21,6 +22,7 @@ type QueryerContext interface {
 //nolint:gochecknoglobals
 var noopLogger = slog.New(slog.NewJSONHandler(io.Discard, nil))
 
+// Deprecated: Use ormcommon.LoggerFromContext instead.
 func LoggerFromContext(ctx context.Context) *slog.Logger {
 	if ctx == nil {
 		return noopLogger
@@ -31,6 +33,7 @@ func LoggerFromContext(ctx context.Context) *slog.Logger {
 	return noopLogger
 }
 
+// Deprecated: Use ormcommon.LoggerWithContext instead.
 func LoggerWithContext(ctx context.Context, logger *slog.Logger) context.Context {
 	return context.WithValue(ctx, (*slog.Logger)(nil), logger)
 }

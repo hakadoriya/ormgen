@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	{{ $ormcommonPackageImportPath := $.ORMCommonPackageImportPath | basename }}{{ $ormcommonPackageImportPath }} "{{ $.ORMCommonPackageImportPath }}"
 	{{ $ormoptPackageImportPath := $.ORMOptPackageImportPath | basename }}{{ $ormoptPackageImportPath }} "{{ $.ORMOptPackageImportPath }}"
 
 	{{ $packageImportPathOriginal := $.PackageImportPath | basename }}{{ $packageImportPath := print $packageImportPathOriginal "_" }}{{ $packageImportPath }} "{{ $.PackageImportPath }}"
@@ -16,7 +17,7 @@ import (
 const Insert{{ $table.StructName }}Query = `INSERT INTO {{ $table.TableName }} ({{- range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) VALUES ({{ placeholder $table.Columns 1 }})`
 
 func (s *_ORM) Insert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Insert{{ $table.StructName }}Query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Insert{{ $table.StructName }}Query)
 	_, err := queryerContext.ExecContext(ctx, Insert{{ $table.StructName }}Query, {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $table.TableName }}.{{ $column.FieldName }}{{- end }})
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))
@@ -63,7 +64,7 @@ func (s *_ORM) BulkInsert{{ $table.StructName }}(ctx context.Context, queryerCon
 		}
 
 		query := BulkInsert{{ $table.StructName }}QueryPrefix + strings.Join(placeholders, ", ")
-		{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+		{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
 
 		_, err := queryerContext.ExecContext(ctx, query, args...)
 		if err != nil {
@@ -77,7 +78,7 @@ func (s *_ORM) BulkInsert{{ $table.StructName }}(ctx context.Context, queryerCon
 const Get{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }}`
 
 func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}ByPKQuery)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}ByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
 	err := row.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $v.FieldName }}{{- end }})
@@ -90,7 +91,7 @@ func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContex
 const Lock{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }} FOR UPDATE`
 
 func (s *_ORM) Lock{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Lock{{ $table.StructName }}ByPKQuery)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Lock{{ $table.StructName }}ByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, Lock{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
 	err := row.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $v.FieldName }}{{- end }})
@@ -105,7 +106,7 @@ func (s *_ORM) Lock{{ $table.StructName }}ByPK(ctx context.Context, queryerConte
 const Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }}`
 
 func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
 	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
 	err := row.Scan({{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $column.FieldName }}{{- end }})
@@ -124,7 +125,7 @@ func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Con
 		o.ApplyResultOption(config)
 	}
 	query, args := config.ToSQL(Lock{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ $currentIndex := len $hasOneColumns }}{{ add $currentIndex 1 }})
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
 	row := queryerContext.QueryRowContext(ctx, query, append([]interface{}{{print `{`}}{{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }}{{print `}`}}, args...)...)
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
 	err := row.Scan({{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.StructName | lowerFirst }}.{{ $column.FieldName }}{{- end }})
@@ -146,7 +147,7 @@ func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Co
 		o.ApplyResultOption(config)
 	}
 	query, args := config.ToSQL(List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query, {{ $currentIndex := len $hasManyColumns }}{{ add $currentIndex 1 }})
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, append([]interface{}{{print `{`}}{{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }}{{ end }}{{print `}`}}, args...)...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
@@ -178,7 +179,7 @@ func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Co
 		o.ApplyResultOption(config)
 	}
 	query, args := config.ToSQL(Lock{{ $table.StructName }}By{{ $hasManyTagsKey }}Query, {{ $currentIndex := len $hasManyColumns }}{{ add $currentIndex 1 }})
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, append([]interface{}{{print `{`}}{{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }}{{ end }}{{print `}`}}, args...)...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
@@ -211,7 +212,7 @@ func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {
 		o.ApplyQueryOption(config)
 	}
 	query, args := config.ToSQL(List{{ $table.StructName }}Query, 1)
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
@@ -243,7 +244,7 @@ func (s *_ORM) Lock{{ $table.StructName }}(ctx context.Context, queryerContext {
 		o.ApplyQueryOption(config)
 	}
 	query, args := config.ToSQL(Lock{{ $table.StructName }}Query, 1)
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
 	rows, err := queryerContext.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
@@ -269,7 +270,7 @@ func (s *_ORM) Lock{{ $table.StructName }}(ctx context.Context, queryerContext {
 const Update{{ $table.StructName }}Query = `UPDATE {{ $table.TableName }} SET ({{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) = ({{ placeholder $table.NotPrimaryKeys 1 }}) WHERE {{ $currentIndex := len $table.NotPrimaryKeys }}{{ $nextIndex := add $currentIndex 1 }}{{ placeholderInWhere .PrimaryKeys "AND" $nextIndex }}`
 
 func (s *_ORM) Update{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Update{{ $table.StructName }}Query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Update{{ $table.StructName }}Query)
 	_, err := queryerContext.ExecContext(ctx, Update{{ $table.StructName }}Query, {{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $table.TableName }}.{{ $column.FieldName }}{{- end }}, {{ range $i, $v := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $table.TableName }}.{{ $v.FieldName }}{{ end }})
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))
@@ -280,7 +281,7 @@ func (s *_ORM) Update{{ $table.StructName }}(ctx context.Context, queryerContext
 const Delete{{ $table.StructName }}ByPKQuery = `DELETE FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }}`
 
 func (s *_ORM) Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) error {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}ByPKQuery)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}ByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, Delete{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))
@@ -292,7 +293,7 @@ func (s *_ORM) Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerCon
 const Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `DELETE FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }}`
 
 func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) error {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
 	_, err := queryerContext.ExecContext(ctx, Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }})
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))
@@ -305,7 +306,7 @@ func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.C
 const Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `DELETE FROM {{ $table.TableName }} WHERE ({{ placeholderInWhere $hasManyColumns "AND" 1 }})`
 
 func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}) error {
-	{{ $ormoptPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query)
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query)
 	_, err := queryerContext.ExecContext(ctx, Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }}{{ end }})
 	if err != nil {
 		return fmt.Errorf("queryerContext.ExecContext: %w", s.HandleError(ctx, err))

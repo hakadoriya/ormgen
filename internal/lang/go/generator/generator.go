@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	eachFileTmpl    = "templates/package/each_file.go.tmpl"
-	eachPackageTmpl = "templates/package/ormgen.go.tmpl"
-	ormoptTmpl      = "templates/ormopt/ormopt.go"
+	eachFileTmpl      = "templates/package/each_file.go.tmpl"
+	eachPackageTmpl   = "templates/package/ormgen.go.tmpl"
+	ormcommonFilename = "templates/ormcommon/ormcommon.go"
+	ormoptFilename    = "templates/ormopt/ormopt.go"
 )
 
 //nolint:gochecknoglobals
@@ -41,13 +42,14 @@ var (
 )
 
 type FileInfo struct {
-	SourceFile              string
-	PackageName             string
-	PackageImportPath       string
-	ORMOptPackageImportPath string
-	Dialect                 string
-	SliceTypeSuffix         string
-	Tables                  []*TableInfo
+	SourceFile                 string
+	PackageName                string
+	PackageImportPath          string
+	ORMCommonPackageImportPath string
+	ORMOptPackageImportPath    string
+	Dialect                    string
+	SliceTypeSuffix            string
+	Tables                     []*TableInfo
 }
 
 func fieldName(x ast.Expr) *ast.Ident {
@@ -120,7 +122,7 @@ func Generate(ctx context.Context, packageSources source.PackageSourceSlice) err
 
 	cfg := contexts.GenerateConfig(ctx)
 
-	ormoptPackageImportPath, err := generateORMOptFile(ctx)
+	ormcommonPackageImportPath, ormoptPackageImportPath, err := generateORMOptFile(ctx)
 	if err != nil {
 		return errorz.Errorf("generateORMOptFile: %w", err)
 	}
@@ -157,12 +159,12 @@ func Generate(ctx context.Context, packageSources source.PackageSourceSlice) err
 				tablesInPackage = append(tablesInPackage, tableInfo)
 			}
 
-			if err := generateEachFile(ctx, ormoptPackageImportPath, packageName, packageSource, fileSource, tablesInFile); err != nil {
+			if err := generateEachFile(ctx, ormcommonPackageImportPath, ormoptPackageImportPath, packageName, packageSource, fileSource, tablesInFile); err != nil {
 				return errorz.Errorf("generateEachFile: %w", err)
 			}
 		}
 
-		if err := generateEachPackage(ctx, ormoptPackageImportPath, packageName, packageSource, tablesInPackage); err != nil {
+		if err := generateEachPackage(ctx, ormcommonPackageImportPath, ormoptPackageImportPath, packageName, packageSource, tablesInPackage); err != nil {
 			return errorz.Errorf("generateEachPackage: %w", err)
 		}
 	}

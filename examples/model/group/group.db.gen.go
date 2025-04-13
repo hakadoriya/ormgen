@@ -4,6 +4,11 @@
 
 package group
 
+import (
+	"fmt"
+	"strings"
+)
+
 func (s *Group) TableName() string {
 	return "group"
 }
@@ -36,4 +41,17 @@ func (s GroupSlice) ColumnName_ID() string {
 
 func (s GroupSlice) ColumnName_Name() string {
 	return "name"
+}
+
+func (s GroupSlice) MapByPK() map[string]*Group {
+	result := make(map[string]*Group)
+	for _, v := range s {
+		pkStringSlice := []string{fmt.Sprint(v.ID)}
+		pk := strings.Join(pkStringSlice, "-")
+		if _, ok := result[pk]; ok {
+			panic(fmt.Errorf("duplicate primary key: table=%T, pk=%s, one=%v, other=%v", v, pk, v, result[pk]))
+		}
+		result[pk] = v
+	}
+	return result
 }
