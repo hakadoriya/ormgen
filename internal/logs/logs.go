@@ -24,7 +24,7 @@ var (
 )
 
 func New(w io.Writer, level slog.Level, attrs ...slog.Attr) *slog.Logger {
-	return slog.New(slogz.NewHandler(w, level)).With(append(slicez.Map(attrs, func(a slog.Attr) any { return a }), slog.String("app", "ormgen"))...)
+	return slog.New(slogz.NewHandler(w, level)).With(append(slicez.Map(attrs, func(_ int, a slog.Attr) any { return a }), slog.String("app", "ormgen"))...)
 }
 
 func NewTrace(w io.Writer, level slog.Level, attrs ...slog.Attr) *TraceLogger {
