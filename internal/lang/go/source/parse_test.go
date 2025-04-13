@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/hakadoriya/z.go/buildz"
 	"github.com/hakadoriya/z.go/testingz/assertz"
 	"github.com/hakadoriya/z.go/testingz/requirez"
 
@@ -31,12 +30,6 @@ func TestParse(t *testing.T) {
 
 	t.Run("success,Parse", func(t *testing.T) {
 		t.Parallel()
-
-		if isInGOPATH, err := buildz.IsInGOPATH("."); err != nil {
-			t.Skipf("🚫: SKIP: This is a workaround to skip this test when not in GOPATH (mainly for GitHub Actions): %v", err)
-		} else if !isInGOPATH {
-			t.Skip("🚫: SKIP: This is a workaround to skip this test when not in GOPATH (mainly for GitHub Actions)")
-		}
 
 		ctx := contexts.WithGenerateConfig(context.Background(), &config.GenerateConfig{
 			GoColumnTag: goColumnTag,

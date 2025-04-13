@@ -47,12 +47,6 @@ func Test_walkDirFn(t *testing.T) {
 	t.Run("error,no-such-file-or-directory.dat", func(t *testing.T) {
 		t.Parallel()
 
-		if isInGOPATH, err := buildz.IsInGOPATH("."); err != nil {
-			t.Skipf("🚫: SKIP: This is a workaround to skip this test when not in GOPATH (mainly for GitHub Actions): %v", err)
-		} else if !isInGOPATH {
-			t.Skip("🚫: SKIP: This is a workaround to skip this test when not in GOPATH (mainly for GitHub Actions)")
-		}
-
 		ctx := contexts.WithGenerateConfig(context.Background(), &config.GenerateConfig{
 			GoColumnTag: goColumnTag,
 		})
@@ -79,17 +73,11 @@ func Test_walkDirFn(t *testing.T) {
 		requirez.NoError(t, errStat)
 		parseWalkDirFn := newParseWalkDir(ctx, "/", fileExt, nil)
 		err := parseWalkDirFn(validSourceFileUser, fs.FileInfoToDirEntry(info), nil)
-		requirez.ErrorIs(t, err, buildz.ErrPathIsNotInGOPATH)
+		requirez.ErrorIs(t, err, buildz.ErrGoModFileNotFound)
 	})
 
 	t.Run("error,filepath.Rel", func(t *testing.T) {
 		t.Parallel()
-
-		if isInGOPATH, err := buildz.IsInGOPATH("."); err != nil {
-			t.Skipf("🚫: SKIP: This is a workaround to skip this test when not in GOPATH (mainly for GitHub Actions): %v", err)
-		} else if !isInGOPATH {
-			t.Skip("🚫: SKIP: This is a workaround to skip this test when not in GOPATH (mainly for GitHub Actions)")
-		}
 
 		ctx := contexts.WithGenerateConfig(context.Background(), &config.GenerateConfig{
 			GoColumnTag: goColumnTag,
