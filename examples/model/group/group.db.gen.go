@@ -5,8 +5,8 @@
 package group
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 func (s *Group) TableName() string {

@@ -17,7 +17,7 @@ import (
 	"github.com/hakadoriya/ormgen/internal/lang/go/source"
 )
 
-//nolint:exhaustruct,funlen
+//nolint:cyclop,exhaustruct,funlen,maintidx
 func fprintTableMethods(ctx context.Context, w io.Writer, fileSource *source.FileSource) error {
 	ctx, span := tracez.Start(ctx)
 	defer span.End()
@@ -42,13 +42,13 @@ func fprintTableMethods(ctx context.Context, w io.Writer, fileSource *source.Fil
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: strconv.Quote("strings"),
+							Value: strconv.Quote("fmt"),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: strconv.Quote("fmt"),
+							Value: strconv.Quote("strings"),
 						},
 					},
 				},

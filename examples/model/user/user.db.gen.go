@@ -5,8 +5,8 @@
 package user
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 func (s *User) TableName() string {

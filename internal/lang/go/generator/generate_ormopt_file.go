@@ -15,6 +15,7 @@ import (
 	"github.com/hakadoriya/ormgen/internal/logs"
 )
 
+//nolint:cyclop,funlen
 func generateORMOptFile(ctx context.Context) (ormcommonPackageImportPath string, ormoptPackageImportPath string, err error) {
 	ctx, span := tracez.Start(ctx)
 	defer span.End()
