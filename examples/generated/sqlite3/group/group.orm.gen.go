@@ -16,7 +16,7 @@ import (
 
 const InsertGroupQuery = `INSERT INTO group (id, name) VALUES (?, ?)`
 
-func (s *_ORM) InsertGroup(ctx context.Context, queryerContext ormopt.QueryerContext, group *group_.Group) error {
+func (s *_ORM) InsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error {
 	ormcommon.LoggerFromContext(ctx).Debug(InsertGroupQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertGroupQuery, group.ID, group.Name)
 	if err != nil {
@@ -27,7 +27,7 @@ func (s *_ORM) InsertGroup(ctx context.Context, queryerContext ormopt.QueryerCon
 
 const BulkInsertGroupQueryPrefix = `INSERT INTO group (id, name) VALUES `
 
-func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormopt.QueryerContext, groupSlice []*group_.Group) error {
+func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, groupSlice []*group_.Group) error {
 	if len(groupSlice) == 0 {
 		return nil
 	}
@@ -77,7 +77,7 @@ func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormopt.Querye
 
 const GetGroupByPKQuery = `SELECT id, name FROM group WHERE id = ?`
 
-func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error) {
+func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetGroupByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetGroupByPKQuery, id)
 	group := new(group_.Group)
@@ -90,7 +90,7 @@ func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerCo
 
 const ListGroupQuery = `SELECT id, name FROM group`
 
-func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
+func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -122,7 +122,7 @@ func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormopt.QueryerConte
 
 const UpdateGroupQuery = `UPDATE group SET (name) = (?) WHERE id = ?`
 
-func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormopt.QueryerContext, group *group_.Group) error {
+func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error {
 	ormcommon.LoggerFromContext(ctx).Debug(UpdateGroupQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateGroupQuery, group.Name, group.ID)
 	if err != nil {
@@ -133,7 +133,7 @@ func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormopt.QueryerCon
 
 const DeleteGroupByPKQuery = `DELETE FROM group WHERE id = ?`
 
-func (s *_ORM) DeleteGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) error {
+func (s *_ORM) DeleteGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteGroupByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteGroupByPKQuery, id)
 	if err != nil {

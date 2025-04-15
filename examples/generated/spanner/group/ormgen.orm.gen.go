@@ -7,6 +7,7 @@ import (
 	"context"
 	"strconv"
 
+	ormcommon "github.com/hakadoriya/ormgen/examples/generated/spanner/ormcommon"
 	ormopt "github.com/hakadoriya/ormgen/examples/generated/spanner/ormopt"
 	group_ "github.com/hakadoriya/ormgen/examples/model/group"
 )
@@ -19,12 +20,12 @@ var (
 var strconvItoa = strconv.Itoa
 
 type ORM interface {
-	InsertGroup(ctx context.Context, queryerContext ormopt.QueryerContext, group *group_.Group) error
-	BulkInsertGroup(ctx context.Context, queryerContext ormopt.QueryerContext, groupSlice []*group_.Group) error
-	GetGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) (*group_.Group, error)
-	ListGroup(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error)
-	UpdateGroup(ctx context.Context, queryerContext ormopt.QueryerContext, group *group_.Group) error
-	DeleteGroupByPK(ctx context.Context, queryerContext ormopt.QueryerContext, id int) error
+	InsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error
+	BulkInsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, groupSlice []*group_.Group) error
+	GetGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error)
+	ListGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error)
+	UpdateGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error
+	DeleteGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) error
 }
 
 func NewORM(opts ...ORMOption) ORM {
