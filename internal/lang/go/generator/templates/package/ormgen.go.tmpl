@@ -7,6 +7,7 @@ import (
 	"context"
 	"strconv"
 
+	{{ $ormcommonPackageImportPath := $.ORMCommonPackageImportPath | basename }}{{ $ormcommonPackageImportPath }} "{{ $.ORMCommonPackageImportPath }}"
 	{{ $ormoptPackageImportPath := $.ORMOptPackageImportPath | basename }}{{ $ormoptPackageImportPath }} "{{ $.ORMOptPackageImportPath }}"
 	{{ $packageImportPathOriginal := $.PackageImportPath | basename }}{{ $packageImportPath := print $packageImportPathOriginal "_" }}{{ $packageImportPath }} "{{ $.PackageImportPath }}"
 )
@@ -20,27 +21,27 @@ var strconvItoa = strconv.Itoa
 
 type ORM interface {
 	{{- range $i, $table := $.Tables }}
-	Insert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error
-	BulkInsert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.StructName | lowerFirst }}Slice []*{{ $packageImportPath }}.{{ $table.StructName }}) error
-	Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error)
+	Insert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error
+	BulkInsert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ $table.StructName | lowerFirst }}Slice []*{{ $packageImportPath }}.{{ $table.StructName }}) error
+	Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error)
 	{{- range $i, $hasOneTagsKey := $table.HasOneTagsKeys -}}
 	{{- /* map access by slice element */ -}}{{- $hasOneColumns := index $table.HasOneTags $hasOneTagsKey }}
-	Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error)
+	Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error)
 	{{- end }}
 	{{- range $i, $hasManyTagsKey := $table.HasManyTagsKeys -}}
 	{{- /* map access by slice element */ -}}{{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
-	List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error)
+	List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error)
 	{{- end }}
-	List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error)
-	Update{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error
-	Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) error
+	List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error)
+	Update{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error
+	Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) error
 	{{- range $i, $hasOneTagsKey := $table.HasOneTagsKeys -}}
 	{{- /* map access by slice element */ -}}{{- $hasOneColumns := index $table.HasOneTags $hasOneTagsKey }}
-	Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) error
+	Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) error
 	{{- end }}
 	{{- range $i, $hasManyTagsKey := $table.HasManyTagsKeys -}}
 	{{- /* map access by slice element */ -}}{{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
-	Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}) error
+	Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}) error
 	{{- end }}
 	{{- end }}
 }

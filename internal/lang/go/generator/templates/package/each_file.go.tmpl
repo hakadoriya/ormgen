@@ -16,7 +16,7 @@ import (
 {{ range $i, $table := $.Tables }}
 const Insert{{ $table.StructName }}Query = `INSERT INTO {{ $table.TableName }} ({{- range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) VALUES ({{ placeholder $table.Columns 1 }})`
 
-func (s *_ORM) Insert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
+func (s *_ORM) Insert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Insert{{ $table.StructName }}Query)
 	_, err := queryerContext.ExecContext(ctx, Insert{{ $table.StructName }}Query, {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $table.TableName }}.{{ $column.FieldName }}{{- end }})
 	if err != nil {
@@ -27,7 +27,7 @@ func (s *_ORM) Insert{{ $table.StructName }}(ctx context.Context, queryerContext
 
 const BulkInsert{{ $table.StructName }}QueryPrefix = `INSERT INTO {{ $table.TableName }} ({{- range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) VALUES `
 
-func (s *_ORM) BulkInsert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.StructName | lowerFirst }}Slice []*{{ $packageImportPath }}.{{ $table.StructName }}) error {
+func (s *_ORM) BulkInsert{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ $table.StructName | lowerFirst }}Slice []*{{ $packageImportPath }}.{{ $table.StructName }}) error {
 	if len({{ $table.StructName | lowerFirst }}Slice) == 0 {
 		return nil
 	}
@@ -77,7 +77,7 @@ func (s *_ORM) BulkInsert{{ $table.StructName }}(ctx context.Context, queryerCon
 
 const Get{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }}`
 
-func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}ByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
@@ -90,7 +90,7 @@ func (s *_ORM) Get{{ $table.StructName }}ByPK(ctx context.Context, queryerContex
 {{ if or (ne $.Dialect "sqlite3") }}
 const Lock{{ $table.StructName }}ByPKQuery = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }} FOR UPDATE`
 
-func (s *_ORM) Lock{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+func (s *_ORM) Lock{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Lock{{ $table.StructName }}ByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, Lock{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
@@ -105,7 +105,7 @@ func (s *_ORM) Lock{{ $table.StructName }}ByPK(ctx context.Context, queryerConte
 {{- /* map access by slice element */ -}}{{- $hasOneColumns := index $table.HasOneTags $hasOneTagsKey }}
 const Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }}`
 
-func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
 	row := queryerContext.QueryRowContext(ctx, Get{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }})
 	{{ $table.StructName | lowerFirst }} := new({{ $packageImportPath }}.{{ $table.StructName }})
@@ -118,7 +118,7 @@ func (s *_ORM) Get{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Cont
 {{ if or (ne $.Dialect "sqlite3") }}
 const Lock{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }} FOR UPDATE`
 
-func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
 	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
 	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -140,7 +140,7 @@ func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Con
 {{- /* map access by slice element */ -}}{{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
 const List{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE ({{ placeholderInWhere $hasManyColumns "AND" 1 }})`
 
-func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
 	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -172,7 +172,7 @@ func (s *_ORM) List{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Co
 {{ if or (ne $.Dialect "sqlite3") }}
 const Lock{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }} WHERE ({{ placeholderInWhere $hasManyColumns "AND" 1 }}) FOR UPDATE`
 
-func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
 	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -205,7 +205,7 @@ func (s *_ORM) Lock{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Co
 {{ end }}
 const List{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
 
-func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
 	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -237,7 +237,7 @@ func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {
 {{ if or (ne $.Dialect "sqlite3") }}
 const Lock{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
 
-func (s *_ORM) Lock{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
+func (s *_ORM) Lock{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
 	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
 	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -269,7 +269,7 @@ func (s *_ORM) Lock{{ $table.StructName }}(ctx context.Context, queryerContext {
 {{ end }}
 const Update{{ $table.StructName }}Query = `UPDATE {{ $table.TableName }} SET ({{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }}) = ({{ placeholder $table.NotPrimaryKeys 1 }}) WHERE {{ $currentIndex := len $table.NotPrimaryKeys }}{{ $nextIndex := add $currentIndex 1 }}{{ placeholderInWhere .PrimaryKeys "AND" $nextIndex }}`
 
-func (s *_ORM) Update{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
+func (s *_ORM) Update{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ $table.TableName }} *{{ $packageImportPath }}.{{ $table.StructName }}) error {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Update{{ $table.StructName }}Query)
 	_, err := queryerContext.ExecContext(ctx, Update{{ $table.StructName }}Query, {{ range $i, $column := $table.NotPrimaryKeys }}{{ if $i }}, {{ end }}{{ $table.TableName }}.{{ $column.FieldName }}{{- end }}, {{ range $i, $v := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $table.TableName }}.{{ $v.FieldName }}{{ end }})
 	if err != nil {
@@ -280,7 +280,7 @@ func (s *_ORM) Update{{ $table.StructName }}(ctx context.Context, queryerContext
 
 const Delete{{ $table.StructName }}ByPKQuery = `DELETE FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $table.PrimaryKeys "AND" 1 }}`
 
-func (s *_ORM) Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) error {
+func (s *_ORM) Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }} {{ $pk.FieldType }}{{ end }}) error {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}ByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, Delete{{ $table.StructName }}ByPKQuery, {{ range $i, $pk := $table.PrimaryKeys }}{{ if $i }}, {{ end }}{{ $pk.ColumnName }}{{ end }})
 	if err != nil {
@@ -292,7 +292,7 @@ func (s *_ORM) Delete{{ $table.StructName }}ByPK(ctx context.Context, queryerCon
 {{- /* map access by slice element */ -}}{{- $hasOneColumns := index $table.HasOneTags $hasOneTagsKey }}
 const Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query = `DELETE FROM {{ $table.TableName }} WHERE {{ placeholderInWhere $hasOneColumns "AND" 1 }}`
 
-func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) error {
+func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }} {{ $hasOneCol.FieldType }}{{ end }}) error {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query)
 	_, err := queryerContext.ExecContext(ctx, Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}Query, {{ range $i, $hasOneCol := $hasOneColumns }}{{ if $i }}, {{ end }}{{ $hasOneCol.ColumnName }}{{ end }})
 	if err != nil {
@@ -305,7 +305,7 @@ func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasOneTagsKey }}(ctx context.C
 {{- /* map access by slice element */ -}}{{- $hasManyColumns := index $table.HasManyTags $hasManyTagsKey }}
 const Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query = `DELETE FROM {{ $table.TableName }} WHERE ({{ placeholderInWhere $hasManyColumns "AND" 1 }})`
 
-func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormoptPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}) error {
+func (s *_ORM) Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}) error {
 	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query)
 	_, err := queryerContext.ExecContext(ctx, Delete{{ $table.StructName }}By{{ $hasManyTagsKey }}Query, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }}{{ end }})
 	if err != nil {
