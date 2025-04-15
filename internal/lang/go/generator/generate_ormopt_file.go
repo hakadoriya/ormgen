@@ -72,6 +72,8 @@ func generateORMOptFile(ctx context.Context) (ormcommonPackageImportPath string,
 		return "", "", errorz.Errorf("templates.ReadFile: %w", err)
 	}
 
+	optcommonFileContent = append([]byte(consts.GeneratedFileHeader+"\n"), optcommonFileContent...)
+
 	if err := tracez.StartFuncWithSpanNameSuffix(ctx, "ormcommonFile.Write", func(_ context.Context) (err error) {
 		_, err = ormcommonFile.Write(optcommonFileContent)
 		//nolint:wrapcheck
