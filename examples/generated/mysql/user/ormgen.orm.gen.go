@@ -7,6 +7,7 @@ import (
 	"context"
 	"strconv"
 
+	ormcommon "github.com/hakadoriya/ormgen/examples/generated/mysql/ormcommon"
 	ormopt "github.com/hakadoriya/ormgen/examples/generated/mysql/ormopt"
 	user_ "github.com/hakadoriya/ormgen/examples/model/user"
 )
@@ -19,22 +20,22 @@ var (
 var strconvItoa = strconv.Itoa
 
 type ORM interface {
-	InsertUser(ctx context.Context, queryerContext ormopt.QueryerContext, user *user_.User) error
-	BulkInsertUser(ctx context.Context, queryerContext ormopt.QueryerContext, userSlice []*user_.User) error
-	GetUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) (*user_.User, error)
-	GetUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string) (*user_.User, error)
-	ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
-	ListUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error)
-	UpdateUser(ctx context.Context, queryerContext ormopt.QueryerContext, user *user_.User) error
-	DeleteUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) error
-	DeleteUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string) error
-	DeleteUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string) error
-	InsertAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user *user_.AdminUser) error
-	BulkInsertAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, adminUserSlice []*user_.AdminUser) error
-	GetAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
-	ListAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error)
-	UpdateAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user *user_.AdminUser) error
-	DeleteAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) error
+	InsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error
+	BulkInsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, userSlice []*user_.User) error
+	GetUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) (*user_.User, error)
+	GetUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) (*user_.User, error)
+	ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
+	ListUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error)
+	UpdateUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error
+	DeleteUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) error
+	DeleteUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) error
+	DeleteUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string) error
+	InsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error
+	BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, adminUserSlice []*user_.AdminUser) error
+	GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
+	ListAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error)
+	UpdateAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error
+	DeleteAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) error
 }
 
 func NewORM(opts ...ORMOption) ORM {

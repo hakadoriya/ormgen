@@ -16,7 +16,7 @@ import (
 
 const InsertUserQuery = `INSERT INTO user (user_id, username, address, group_id) VALUES ($1, $2, $3, $4)`
 
-func (s *_ORM) InsertUser(ctx context.Context, queryerContext ormopt.QueryerContext, user *user_.User) error {
+func (s *_ORM) InsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error {
 	ormcommon.LoggerFromContext(ctx).Debug(InsertUserQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertUserQuery, user.UserID, user.Username, user.Address, user.GroupID)
 	if err != nil {
@@ -27,7 +27,7 @@ func (s *_ORM) InsertUser(ctx context.Context, queryerContext ormopt.QueryerCont
 
 const BulkInsertUserQueryPrefix = `INSERT INTO user (user_id, username, address, group_id) VALUES `
 
-func (s *_ORM) BulkInsertUser(ctx context.Context, queryerContext ormopt.QueryerContext, userSlice []*user_.User) error {
+func (s *_ORM) BulkInsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, userSlice []*user_.User) error {
 	if len(userSlice) == 0 {
 		return nil
 	}
@@ -77,7 +77,7 @@ func (s *_ORM) BulkInsertUser(ctx context.Context, queryerContext ormopt.Queryer
 
 const GetUserByPKQuery = `SELECT user_id, username, address, group_id FROM user WHERE user_id = $1`
 
-func (s *_ORM) GetUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) (*user_.User, error) {
+func (s *_ORM) GetUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) (*user_.User, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetUserByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetUserByPKQuery, user_id)
 	user := new(user_.User)
@@ -90,7 +90,7 @@ func (s *_ORM) GetUserByPK(ctx context.Context, queryerContext ormopt.QueryerCon
 
 const LockUserByPKQuery = `SELECT user_id, username, address, group_id FROM user WHERE user_id = $1 FOR UPDATE`
 
-func (s *_ORM) LockUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) (*user_.User, error) {
+func (s *_ORM) LockUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) (*user_.User, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(LockUserByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, LockUserByPKQuery, user_id)
 	user := new(user_.User)
@@ -103,7 +103,7 @@ func (s *_ORM) LockUserByPK(ctx context.Context, queryerContext ormopt.QueryerCo
 
 const GetUserByUsernameQuery = `SELECT user_id, username, address, group_id FROM user WHERE username = $1`
 
-func (s *_ORM) GetUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string) (*user_.User, error) {
+func (s *_ORM) GetUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) (*user_.User, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetUserByUsernameQuery)
 	row := queryerContext.QueryRowContext(ctx, GetUserByUsernameQuery, username)
 	user := new(user_.User)
@@ -116,7 +116,7 @@ func (s *_ORM) GetUserByUsername(ctx context.Context, queryerContext ormopt.Quer
 
 const LockUserByUsernameQuery = `SELECT user_id, username, address, group_id FROM user WHERE username = $1 FOR UPDATE`
 
-func (s *_ORM) LockUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string, opts ...ormopt.ResultOption) (*user_.User, error) {
+func (s *_ORM) LockUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, opts ...ormopt.ResultOption) (*user_.User, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -135,7 +135,7 @@ func (s *_ORM) LockUserByUsername(ctx context.Context, queryerContext ormopt.Que
 
 const ListUserByUsernameAndAddressQuery = `SELECT user_id, username, address, group_id FROM user WHERE (username = $1 AND address = $2)`
 
-func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
+func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -167,7 +167,7 @@ func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext 
 
 const LockUserByUsernameAndAddressQuery = `SELECT user_id, username, address, group_id FROM user WHERE (username = $1 AND address = $2) FOR UPDATE`
 
-func (s *_ORM) LockUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
+func (s *_ORM) LockUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -199,7 +199,7 @@ func (s *_ORM) LockUserByUsernameAndAddress(ctx context.Context, queryerContext 
 
 const ListUserQuery = `SELECT user_id, username, address, group_id FROM user`
 
-func (s *_ORM) ListUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
+func (s *_ORM) ListUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -231,7 +231,7 @@ func (s *_ORM) ListUser(ctx context.Context, queryerContext ormopt.QueryerContex
 
 const LockUserQuery = `SELECT user_id, username, address, group_id FROM user`
 
-func (s *_ORM) LockUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
+func (s *_ORM) LockUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -263,7 +263,7 @@ func (s *_ORM) LockUser(ctx context.Context, queryerContext ormopt.QueryerContex
 
 const UpdateUserQuery = `UPDATE user SET (username, address, group_id) = ($1, $2, $3) WHERE user_id = $4`
 
-func (s *_ORM) UpdateUser(ctx context.Context, queryerContext ormopt.QueryerContext, user *user_.User) error {
+func (s *_ORM) UpdateUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error {
 	ormcommon.LoggerFromContext(ctx).Debug(UpdateUserQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateUserQuery, user.Username, user.Address, user.GroupID, user.UserID)
 	if err != nil {
@@ -274,7 +274,7 @@ func (s *_ORM) UpdateUser(ctx context.Context, queryerContext ormopt.QueryerCont
 
 const DeleteUserByPKQuery = `DELETE FROM user WHERE user_id = $1`
 
-func (s *_ORM) DeleteUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, user_id int) error {
+func (s *_ORM) DeleteUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteUserByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteUserByPKQuery, user_id)
 	if err != nil {
@@ -285,7 +285,7 @@ func (s *_ORM) DeleteUserByPK(ctx context.Context, queryerContext ormopt.Queryer
 
 const DeleteUserByUsernameQuery = `DELETE FROM user WHERE username = $1`
 
-func (s *_ORM) DeleteUserByUsername(ctx context.Context, queryerContext ormopt.QueryerContext, username string) error {
+func (s *_ORM) DeleteUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteUserByUsernameQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteUserByUsernameQuery, username)
 	if err != nil {
@@ -296,7 +296,7 @@ func (s *_ORM) DeleteUserByUsername(ctx context.Context, queryerContext ormopt.Q
 
 const DeleteUserByUsernameAndAddressQuery = `DELETE FROM user WHERE (username = $1 AND address = $2)`
 
-func (s *_ORM) DeleteUserByUsernameAndAddress(ctx context.Context, queryerContext ormopt.QueryerContext, username string, address string) error {
+func (s *_ORM) DeleteUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteUserByUsernameAndAddressQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteUserByUsernameAndAddressQuery, username, address)
 	if err != nil {
@@ -307,7 +307,7 @@ func (s *_ORM) DeleteUserByUsernameAndAddress(ctx context.Context, queryerContex
 
 const InsertAdminUserQuery = `INSERT INTO admin_user (admin_user_id, username, group_id) VALUES ($1, $2, $3)`
 
-func (s *_ORM) InsertAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user *user_.AdminUser) error {
+func (s *_ORM) InsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error {
 	ormcommon.LoggerFromContext(ctx).Debug(InsertAdminUserQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertAdminUserQuery, admin_user.AdminUserID, admin_user.Username, admin_user.GroupID)
 	if err != nil {
@@ -318,7 +318,7 @@ func (s *_ORM) InsertAdminUser(ctx context.Context, queryerContext ormopt.Querye
 
 const BulkInsertAdminUserQueryPrefix = `INSERT INTO admin_user (admin_user_id, username, group_id) VALUES `
 
-func (s *_ORM) BulkInsertAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, adminUserSlice []*user_.AdminUser) error {
+func (s *_ORM) BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, adminUserSlice []*user_.AdminUser) error {
 	if len(adminUserSlice) == 0 {
 		return nil
 	}
@@ -368,7 +368,7 @@ func (s *_ORM) BulkInsertAdminUser(ctx context.Context, queryerContext ormopt.Qu
 
 const GetAdminUserByPKQuery = `SELECT admin_user_id, username, group_id FROM admin_user WHERE admin_user_id = $1`
 
-func (s *_ORM) GetAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
+func (s *_ORM) GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetAdminUserByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetAdminUserByPKQuery, admin_user_id)
 	adminUser := new(user_.AdminUser)
@@ -381,7 +381,7 @@ func (s *_ORM) GetAdminUserByPK(ctx context.Context, queryerContext ormopt.Query
 
 const LockAdminUserByPKQuery = `SELECT admin_user_id, username, group_id FROM admin_user WHERE admin_user_id = $1 FOR UPDATE`
 
-func (s *_ORM) LockAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
+func (s *_ORM) LockAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(LockAdminUserByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, LockAdminUserByPKQuery, admin_user_id)
 	adminUser := new(user_.AdminUser)
@@ -394,7 +394,7 @@ func (s *_ORM) LockAdminUserByPK(ctx context.Context, queryerContext ormopt.Quer
 
 const ListAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`
 
-func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
+func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -426,7 +426,7 @@ func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormopt.QueryerC
 
 const LockAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`
 
-func (s *_ORM) LockAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
+func (s *_ORM) LockAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
 	for _, o := range opts {
@@ -458,7 +458,7 @@ func (s *_ORM) LockAdminUser(ctx context.Context, queryerContext ormopt.QueryerC
 
 const UpdateAdminUserQuery = `UPDATE admin_user SET (username, group_id) = ($1, $2) WHERE admin_user_id = $3`
 
-func (s *_ORM) UpdateAdminUser(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user *user_.AdminUser) error {
+func (s *_ORM) UpdateAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error {
 	ormcommon.LoggerFromContext(ctx).Debug(UpdateAdminUserQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateAdminUserQuery, admin_user.Username, admin_user.GroupID, admin_user.AdminUserID)
 	if err != nil {
@@ -469,7 +469,7 @@ func (s *_ORM) UpdateAdminUser(ctx context.Context, queryerContext ormopt.Querye
 
 const DeleteAdminUserByPKQuery = `DELETE FROM admin_user WHERE admin_user_id = $1`
 
-func (s *_ORM) DeleteAdminUserByPK(ctx context.Context, queryerContext ormopt.QueryerContext, admin_user_id int) error {
+func (s *_ORM) DeleteAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteAdminUserByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteAdminUserByPKQuery, admin_user_id)
 	if err != nil {
