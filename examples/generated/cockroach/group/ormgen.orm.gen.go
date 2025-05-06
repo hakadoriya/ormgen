@@ -20,11 +20,21 @@ var (
 var strconvItoa = strconv.Itoa
 
 type ORM interface {
+	// InsertGroup inserts a new Group into the database.
 	InsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error
+	// BulkInsertGroup inserts multiple Group into the database.
 	BulkInsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, groupSlice []*group_.Group) error
+	// GetGroupByPK gets a Group by its primary keys.
 	GetGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error)
+	// SelectGroupForUpdateByPK locks a Group by its primary keys.
+	SelectGroupForUpdateByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error)
+	// ListGroup returns a slice of Group.
 	ListGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error)
+	// SelectGroupForUpdate locks a Group.
+	SelectGroupForUpdate(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error)
+	// UpdateGroup updates a Group.
 	UpdateGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error
+	// DeleteGroupByPK deletes a Group by its primary keys.
 	DeleteGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) error
 }
 

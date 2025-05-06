@@ -20,21 +20,49 @@ var (
 var strconvItoa = strconv.Itoa
 
 type ORM interface {
+	// InsertUser inserts a new User into the database.
 	InsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error
+	// BulkInsertUser inserts multiple User into the database.
 	BulkInsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, userSlice []*user_.User) error
+	// GetUserByPK gets a User by its primary keys.
 	GetUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) (*user_.User, error)
+	// SelectUserForUpdateByPK locks a User by its primary keys.
+	SelectUserForUpdateByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) (*user_.User, error)
+	// GetUserByUsername gets a User by its Username.
 	GetUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) (*user_.User, error)
+	// SelectUserForUpdateByUsername locks a User by its Username.
+	SelectUserForUpdateByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, opts ...ormopt.ResultOption) (*user_.User, error)
+	// ListUserByUsernameAndAddress returns a slice of User by its UsernameAndAddress.
 	ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
+	// SelectUserForUpdateByUsernameAndAddress locks a User by its UsernameAndAddress.
+	SelectUserForUpdateByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
+	// ListUser returns a slice of User.
 	ListUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error)
+	// SelectUserForUpdate locks a User.
+	SelectUserForUpdate(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error)
+	// UpdateUser updates a User.
 	UpdateUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error
+	// DeleteUserByPK deletes a User by its primary keys.
 	DeleteUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) error
+	// DeleteUserByUsername deletes a User by its Username.
 	DeleteUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) error
+	// DeleteUserByUsernameAndAddress deletes a User by its UsernameAndAddress.
 	DeleteUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string) error
+	// InsertAdminUser inserts a new AdminUser into the database.
 	InsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error
+	// BulkInsertAdminUser inserts multiple AdminUser into the database.
 	BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, adminUserSlice []*user_.AdminUser) error
+	// GetAdminUserByPK gets a AdminUser by its primary keys.
 	GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
+	// SelectAdminUserForUpdateByPK locks a AdminUser by its primary keys.
+	SelectAdminUserForUpdateByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
+	// ListAdminUser returns a slice of AdminUser.
 	ListAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error)
+	// SelectAdminUserForUpdate locks a AdminUser.
+	SelectAdminUserForUpdate(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error)
+	// UpdateAdminUser updates a AdminUser.
 	UpdateAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error
+	// DeleteAdminUserByPK deletes a AdminUser by its primary keys.
 	DeleteAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) error
 }
 
