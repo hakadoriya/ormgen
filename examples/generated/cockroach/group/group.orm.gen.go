@@ -16,6 +16,7 @@ import (
 
 const InsertGroupQuery = `INSERT INTO group (id, name) VALUES ($1, $2)`
 
+// InsertGroup inserts a new Group into the database.
 func (s *_ORM) InsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error {
 	ormcommon.LoggerFromContext(ctx).Debug(InsertGroupQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertGroupQuery, group.ID, group.Name)
@@ -27,6 +28,7 @@ func (s *_ORM) InsertGroup(ctx context.Context, queryerContext ormcommon.Queryer
 
 const BulkInsertGroupQueryPrefix = `INSERT INTO group (id, name) VALUES `
 
+// BulkInsertGroup inserts multiple Group into the database.
 func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, groupSlice []*group_.Group) error {
 	if len(groupSlice) == 0 {
 		return nil
@@ -77,6 +79,7 @@ func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormcommon.Que
 
 const GetGroupByPKQuery = `SELECT id, name FROM group WHERE id = $1`
 
+// GetGroupByPK gets a Group by its primary keys.
 func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetGroupByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetGroupByPKQuery, id)
@@ -90,6 +93,7 @@ func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormcommon.Querye
 
 const LockGroupByPKQuery = `SELECT id, name FROM group WHERE id = $1 FOR UPDATE`
 
+// LockGroupByPK locks a Group by its primary keys.
 func (s *_ORM) LockGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(LockGroupByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, LockGroupByPKQuery, id)
@@ -103,6 +107,7 @@ func (s *_ORM) LockGroupByPK(ctx context.Context, queryerContext ormcommon.Query
 
 const ListGroupQuery = `SELECT id, name FROM group`
 
+// ListGroup returns a slice of Group.
 func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
@@ -135,6 +140,7 @@ func (s *_ORM) ListGroup(ctx context.Context, queryerContext ormcommon.QueryerCo
 
 const LockGroupQuery = `SELECT id, name FROM group`
 
+// LockGroup locks a Group.
 func (s *_ORM) LockGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
@@ -167,6 +173,7 @@ func (s *_ORM) LockGroup(ctx context.Context, queryerContext ormcommon.QueryerCo
 
 const UpdateGroupQuery = `UPDATE group SET (name) = ($1) WHERE id = $2`
 
+// UpdateGroup updates a Group.
 func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, group *group_.Group) error {
 	ormcommon.LoggerFromContext(ctx).Debug(UpdateGroupQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateGroupQuery, group.Name, group.ID)
@@ -178,6 +185,7 @@ func (s *_ORM) UpdateGroup(ctx context.Context, queryerContext ormcommon.Queryer
 
 const DeleteGroupByPKQuery = `DELETE FROM group WHERE id = $1`
 
+// DeleteGroupByPK deletes a Group by its primary keys.
 func (s *_ORM) DeleteGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteGroupByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteGroupByPKQuery, id)

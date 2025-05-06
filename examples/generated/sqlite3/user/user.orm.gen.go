@@ -16,6 +16,7 @@ import (
 
 const InsertUserQuery = `INSERT INTO user (user_id, username, address, group_id) VALUES (?, ?, ?, ?)`
 
+// InsertUser inserts a new User into the database.
 func (s *_ORM) InsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error {
 	ormcommon.LoggerFromContext(ctx).Debug(InsertUserQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertUserQuery, user.UserID, user.Username, user.Address, user.GroupID)
@@ -27,6 +28,7 @@ func (s *_ORM) InsertUser(ctx context.Context, queryerContext ormcommon.QueryerC
 
 const BulkInsertUserQueryPrefix = `INSERT INTO user (user_id, username, address, group_id) VALUES `
 
+// BulkInsertUser inserts multiple User into the database.
 func (s *_ORM) BulkInsertUser(ctx context.Context, queryerContext ormcommon.QueryerContext, userSlice []*user_.User) error {
 	if len(userSlice) == 0 {
 		return nil
@@ -77,6 +79,7 @@ func (s *_ORM) BulkInsertUser(ctx context.Context, queryerContext ormcommon.Quer
 
 const GetUserByPKQuery = `SELECT user_id, username, address, group_id FROM user WHERE user_id = ?`
 
+// GetUserByPK gets a User by its primary keys.
 func (s *_ORM) GetUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) (*user_.User, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetUserByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetUserByPKQuery, user_id)
@@ -90,6 +93,7 @@ func (s *_ORM) GetUserByPK(ctx context.Context, queryerContext ormcommon.Queryer
 
 const GetUserByUsernameQuery = `SELECT user_id, username, address, group_id FROM user WHERE username = ?`
 
+// GetUserByUsername gets a User by its Username.
 func (s *_ORM) GetUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) (*user_.User, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetUserByUsernameQuery)
 	row := queryerContext.QueryRowContext(ctx, GetUserByUsernameQuery, username)
@@ -103,6 +107,7 @@ func (s *_ORM) GetUserByUsername(ctx context.Context, queryerContext ormcommon.Q
 
 const ListUserByUsernameAndAddressQuery = `SELECT user_id, username, address, group_id FROM user WHERE (username = ? AND address = ?)`
 
+// ListUserByUsernameAndAddress returns a slice of User by its UsernameAndAddress.
 func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
@@ -135,6 +140,7 @@ func (s *_ORM) ListUserByUsernameAndAddress(ctx context.Context, queryerContext 
 
 const ListUserQuery = `SELECT user_id, username, address, group_id FROM user`
 
+// ListUser returns a slice of User.
 func (s *_ORM) ListUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
@@ -167,6 +173,7 @@ func (s *_ORM) ListUser(ctx context.Context, queryerContext ormcommon.QueryerCon
 
 const UpdateUserQuery = `UPDATE user SET (username, address, group_id) = (?, ?, ?) WHERE user_id = ?`
 
+// UpdateUser updates a User.
 func (s *_ORM) UpdateUser(ctx context.Context, queryerContext ormcommon.QueryerContext, user *user_.User) error {
 	ormcommon.LoggerFromContext(ctx).Debug(UpdateUserQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateUserQuery, user.Username, user.Address, user.GroupID, user.UserID)
@@ -178,6 +185,7 @@ func (s *_ORM) UpdateUser(ctx context.Context, queryerContext ormcommon.QueryerC
 
 const DeleteUserByPKQuery = `DELETE FROM user WHERE user_id = ?`
 
+// DeleteUserByPK deletes a User by its primary keys.
 func (s *_ORM) DeleteUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, user_id int) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteUserByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteUserByPKQuery, user_id)
@@ -189,6 +197,7 @@ func (s *_ORM) DeleteUserByPK(ctx context.Context, queryerContext ormcommon.Quer
 
 const DeleteUserByUsernameQuery = `DELETE FROM user WHERE username = ?`
 
+// DeleteUserByUsername deletes a User by its Username.
 func (s *_ORM) DeleteUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteUserByUsernameQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteUserByUsernameQuery, username)
@@ -200,6 +209,7 @@ func (s *_ORM) DeleteUserByUsername(ctx context.Context, queryerContext ormcommo
 
 const DeleteUserByUsernameAndAddressQuery = `DELETE FROM user WHERE (username = ? AND address = ?)`
 
+// DeleteUserByUsernameAndAddress deletes a User by its UsernameAndAddress.
 func (s *_ORM) DeleteUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteUserByUsernameAndAddressQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteUserByUsernameAndAddressQuery, username, address)
@@ -211,6 +221,7 @@ func (s *_ORM) DeleteUserByUsernameAndAddress(ctx context.Context, queryerContex
 
 const InsertAdminUserQuery = `INSERT INTO admin_user (admin_user_id, username, group_id) VALUES (?, ?, ?)`
 
+// InsertAdminUser inserts a new AdminUser into the database.
 func (s *_ORM) InsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error {
 	ormcommon.LoggerFromContext(ctx).Debug(InsertAdminUserQuery)
 	_, err := queryerContext.ExecContext(ctx, InsertAdminUserQuery, admin_user.AdminUserID, admin_user.Username, admin_user.GroupID)
@@ -222,6 +233,7 @@ func (s *_ORM) InsertAdminUser(ctx context.Context, queryerContext ormcommon.Que
 
 const BulkInsertAdminUserQueryPrefix = `INSERT INTO admin_user (admin_user_id, username, group_id) VALUES `
 
+// BulkInsertAdminUser inserts multiple AdminUser into the database.
 func (s *_ORM) BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, adminUserSlice []*user_.AdminUser) error {
 	if len(adminUserSlice) == 0 {
 		return nil
@@ -272,6 +284,7 @@ func (s *_ORM) BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon
 
 const GetAdminUserByPKQuery = `SELECT admin_user_id, username, group_id FROM admin_user WHERE admin_user_id = ?`
 
+// GetAdminUserByPK gets a AdminUser by its primary keys.
 func (s *_ORM) GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error) {
 	ormcommon.LoggerFromContext(ctx).Debug(GetAdminUserByPKQuery)
 	row := queryerContext.QueryRowContext(ctx, GetAdminUserByPKQuery, admin_user_id)
@@ -285,6 +298,7 @@ func (s *_ORM) GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.Qu
 
 const ListAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`
 
+// ListAdminUser returns a slice of AdminUser.
 func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error) {
 	config := new(ormopt.QueryConfig)
 	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
@@ -317,6 +331,7 @@ func (s *_ORM) ListAdminUser(ctx context.Context, queryerContext ormcommon.Query
 
 const UpdateAdminUserQuery = `UPDATE admin_user SET (username, group_id) = (?, ?) WHERE admin_user_id = ?`
 
+// UpdateAdminUser updates a AdminUser.
 func (s *_ORM) UpdateAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user *user_.AdminUser) error {
 	ormcommon.LoggerFromContext(ctx).Debug(UpdateAdminUserQuery)
 	_, err := queryerContext.ExecContext(ctx, UpdateAdminUserQuery, admin_user.Username, admin_user.GroupID, admin_user.AdminUserID)
@@ -328,6 +343,7 @@ func (s *_ORM) UpdateAdminUser(ctx context.Context, queryerContext ormcommon.Que
 
 const DeleteAdminUserByPKQuery = `DELETE FROM admin_user WHERE admin_user_id = ?`
 
+// DeleteAdminUserByPK deletes a AdminUser by its primary keys.
 func (s *_ORM) DeleteAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) error {
 	ormcommon.LoggerFromContext(ctx).Debug(DeleteAdminUserByPKQuery)
 	_, err := queryerContext.ExecContext(ctx, DeleteAdminUserByPKQuery, admin_user_id)
