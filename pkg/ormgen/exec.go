@@ -6,7 +6,6 @@ import (
 	"github.com/hakadoriya/z.go/cliz"
 	"github.com/hakadoriya/z.go/errorz"
 	"github.com/hakadoriya/z.go/mustz"
-	"github.com/hakadoriya/z.go/otelz/tracez"
 
 	"github.com/hakadoriya/ormgen/internal/config"
 	"github.com/hakadoriya/ormgen/internal/consts"
@@ -16,9 +15,6 @@ import (
 func Exec(ctx context.Context, osArgs []string) (exitCode int, err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	ctx, span := tracez.Start(ctx)
-	defer span.End()
 
 	generateOpts := mustz.One(cliz.MarshalOptions(new(config.GenerateConfig)))
 

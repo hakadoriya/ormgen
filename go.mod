@@ -3,6 +3,7 @@ module github.com/hakadoriya/ormgen
 go 1.23.4
 
 require (
+	github.com/grafana/pyroscope-go v1.2.2
 	github.com/hakadoriya/z.go v0.0.1-0.20250412215441-c922da6e6b56
 	github.com/hakadoriya/z.go/grpcz v0.0.0-20250209140321-e92fccb23140
 	github.com/hakadoriya/z.go/otelz v0.0.0-20250209140321-e92fccb23140
@@ -20,6 +21,7 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.8 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
