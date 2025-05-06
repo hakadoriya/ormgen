@@ -46,3 +46,10 @@ datasources:
   type: grafana-pyroscope-datasource
   uid: pyroscope
   url: http://pyroscope:4040
+  access: proxy
+  orgId: 1
+  basicAuth: false
+  isDefault: false
+  version: 1
+  editable: false
+  apiVersion: 1
