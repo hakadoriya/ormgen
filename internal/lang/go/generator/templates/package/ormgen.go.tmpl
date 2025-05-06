@@ -49,6 +49,10 @@ type ORM interface {
 	Select{{ $table.StructName }}ForUpdateBy{{ $hasManyTagsKey }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, {{ range $i, $hasManyCol := $hasManyColumns }}{{ if $i }}, {{ end }}{{ $hasManyCol.ColumnName }} {{ $hasManyCol.FieldType }}{{ end }}, opts ...{{ $ormoptPackageImportPath }}.ResultOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error)
 	{{- end -}}
 	{{- end }}
+	// GetOne{{ $table.StructName }} returns a {{ $table.StructName }}.
+	// If no rows are found, it returns sql.ErrNoRows.
+	// If multiple rows are found, it returns {{ $ormcommonPackageImportPath }}.ErrNotUnique.
+	GetOne{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) (*{{ $packageImportPath }}.{{ $table.StructName }}, error)
 	// List{{ $table.StructName }} returns a slice of {{ $table.StructName }}.
 	List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error)
 	{{- if or (ne $.Dialect "sqlite3") }}

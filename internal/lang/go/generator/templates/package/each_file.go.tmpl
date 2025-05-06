@@ -5,6 +5,7 @@ package {{ $.PackageName }}
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -203,6 +204,45 @@ func (s *_ORM) Select{{ $table.StructName }}ForUpdateBy{{ $hasManyTagsKey }}(ctx
 }
 {{ end -}}
 {{ end }}
+const GetOne{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
+
+func (s *_ORM) GetOne{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) (*{{ $packageImportPath }}.{{ $table.StructName }}, error) {
+	config := new({{ $ormoptPackageImportPath }}.QueryConfig)
+	{{ $ormoptPackageImportPath }}.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyQueryOption(config)
+	}
+	query, args := config.ToSQL(GetOne{{ $table.StructName }}Query, 1)
+
+	{{ $ormcommonPackageImportPath }}.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var {{ $table.StructName | lowerFirst }}Slice {{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}
+	for rows.Next() {
+		{{ $table.TableName }} := new({{ $packageImportPath }}.{{ $table.StructName }})
+		err := rows.Scan({{ range $i, $v := $table.Columns }}{{ if $i }}, {{ end }}&{{ $table.TableName }}.{{ $v.FieldName }}{{- end }})
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		{{ $table.StructName | lowerFirst }}Slice = append({{ $table.StructName | lowerFirst }}Slice, {{ $table.TableName }})
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	if len({{ $table.StructName | lowerFirst }}Slice) == 0 {
+		return nil, s.HandleError(ctx, sql.ErrNoRows)
+	}
+	if l := len({{ $table.StructName | lowerFirst }}Slice); l > 1 {
+		return nil, fmt.Errorf("len({{ $table.StructName | lowerFirst }}Slice)=%d: %w", l, {{ $ormcommonPackageImportPath }}.ErrNotUnique)
+	}
+	return {{ $table.StructName | lowerFirst }}Slice[0], nil
+}
+
 const List{{ $table.StructName }}Query = `SELECT {{ range $i, $column := $table.Columns }}{{ if $i }}, {{ end }}{{ $column.ColumnName }}{{- end }} FROM {{ $table.TableName }}`
 
 func (s *_ORM) List{{ $table.StructName }}(ctx context.Context, queryerContext {{ $ormcommonPackageImportPath }}.QueryerContext, opts ...{{ $ormoptPackageImportPath }}.QueryOption) ({{ $packageImportPath }}.{{ $table.StructName }}{{ $.SliceTypeSuffix }}, error) {
