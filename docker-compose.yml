@@ -7,6 +7,8 @@ networks:
 
 services:
   otelcol:
+    depends_on:
+      - loki
     # ref: https://hub.docker.com/r/otel/opentelemetry-collector-contrib/tags
     image: otel/opentelemetry-collector-contrib:0.123.0
     restart: always
@@ -30,11 +32,10 @@ services:
       - type: bind
         source: ./docker-compose/config/otelcol/otelcol.yaml
         target: /etc/otelcol-contrib/config.yaml
-    depends_on:
-      - loki
 
   loki:
-    image: grafana/loki:latest
+    # ref: https://hub.docker.com/r/grafana/loki/tags
+    image: grafana/loki:3.5.0
     networks:
       hostnetwork:
     ports:
@@ -76,6 +77,9 @@ services:
   #    - COLLECTOR_OTLP_ENABLED=true
 
   prometheus:
+    depends_on:
+      - otelcol
+      - cadvisor
     # ref: https://hub.docker.com/r/prom/prometheus/tags
     image: prom/prometheus:v3.3.1
     restart: always
@@ -96,9 +100,6 @@ services:
       - "--storage.tsdb.path=/data/prometheus/tsdb"
       - "--enable-feature=expand-external-labels"
       - "--web.enable-remote-write-receiver"
-    depends_on:
-      - otelcol
-      - cadvisor
 
   minio:
     # ref: https://hub.docker.com/r/minio/minio/tags
@@ -118,6 +119,9 @@ services:
       - MINIO_ROOT_PASSWORD=password
 
   tempo:
+    depends_on:
+      - minio
+      - tempo-init
     # ref: https://hub.docker.com/r/grafana/tempo/tags
     image: &tempoImage grafana/tempo:2.7.2
     restart: always
@@ -140,9 +144,6 @@ services:
       - type: bind
         source: ./docker-compose/volume/tempo
         target: /var/tempo
-    depends_on:
-      - minio
-      - tempo-init
   tempo-init:
     image: *tempoImage
     user: root
@@ -154,6 +155,12 @@ services:
         source: ./docker-compose/volume/tempo
         target: /var/tempo
     stop_grace_period: 1s
+
+  pyroscope:
+    # ref: https://hub.docker.com/r/grafana/pyroscope/tags
+    image: grafana/pyroscope:1.12.2
+    ports:
+      - 34040:4040 # Pyroscope UI http://localhost:34040/
 
   grafana:
     # ref: https://hub.docker.com/r/grafana/grafana/tags
