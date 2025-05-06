@@ -39,6 +39,7 @@ func ki(bytes uint64) uint64 {
 	return bytes / ki
 }
 
+//nolint:funlen,cyclop
 func Generate(c *cliz.Command, args []string) (err error) {
 	ctx := c.Context()
 
@@ -48,6 +49,7 @@ func Generate(c *cliz.Command, args []string) (err error) {
 
 	// profile
 	if pyroscopeEndpoint := os.Getenv("PYROSCOPE_ENDPOINT"); pyroscopeEndpoint != "" {
+		//nolint:exhaustruct
 		p, err := pyroscope.Start(pyroscope.Config{
 			ApplicationName: "ormgen",
 			ServerAddress:   pyroscopeEndpoint,
@@ -56,7 +58,12 @@ func Generate(c *cliz.Command, args []string) (err error) {
 			err = errorz.Errorf("pyroscope.Start: %w", err)
 			logs.Stderr.Debug(err.Error(), slogz.Error(err))
 		} else {
-			defer p.Stop()
+			defer func() {
+				if err := p.Stop(); err != nil {
+					err = errorz.Errorf("p.Stop: %w", err)
+					logs.Stderr.Debug(err.Error(), slogz.Error(err))
+				}
+			}()
 		}
 	}
 
