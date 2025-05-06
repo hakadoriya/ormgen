@@ -159,6 +159,9 @@ services:
   pyroscope:
     # ref: https://hub.docker.com/r/grafana/pyroscope/tags
     image: grafana/pyroscope:1.12.2
+    restart: always
+    networks:
+      hostnetwork:
     ports:
       - 34040:4040 # Pyroscope UI http://localhost:34040/
 
