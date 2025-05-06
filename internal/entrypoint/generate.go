@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/grafana/pyroscope-go"
 	"github.com/hakadoriya/z.go/cliz"
 	"github.com/hakadoriya/z.go/errorz"
 	"github.com/hakadoriya/z.go/grpcz/grpclogz"
@@ -38,11 +39,38 @@ func ki(bytes uint64) uint64 {
 	return bytes / ki
 }
 
+//nolint:funlen,cyclop
 func Generate(c *cliz.Command, args []string) (err error) {
 	ctx := c.Context()
 
+	// trace
+	ctx, span := tracez.Start(ctx)
+	defer span.End()
+
+	// profile
+	if pyroscopeEndpoint := os.Getenv("PYROSCOPE_ENDPOINT"); pyroscopeEndpoint != "" {
+		//nolint:exhaustruct
+		p, err := pyroscope.Start(pyroscope.Config{
+			ApplicationName: "ormgen",
+			ServerAddress:   pyroscopeEndpoint,
+		})
+		if err != nil {
+			err = errorz.Errorf("pyroscope.Start: %w", err)
+			logs.Stderr.Debug(err.Error(), slogz.Error(err))
+		} else {
+			defer func() {
+				if err := p.Stop(); err != nil {
+					err = errorz.Errorf("p.Stop: %w", err)
+					logs.Stderr.Debug(err.Error(), slogz.Error(err))
+				}
+			}()
+		}
+	}
+
+	// log
 	grpclog.SetLoggerV2(grpclogz.NewGRPCLoggerV2(logs.Stdout.Logger))
 
+	// otel
 	shutdown, err := otelz.SetupAutoExport(ctx, otelz.WithResourceOptions(resource.WithAttributes(attribute.String("service.name", consts.AppName))))
 	if err != nil {
 		err = errorz.Errorf("otelz.SetupAutoExport: %w", err)
@@ -67,9 +95,6 @@ func Generate(c *cliz.Command, args []string) (err error) {
 		err = errorz.Errorf("runtime.Start: %w", err)
 		logs.Stderr.Debug(err.Error(), slogz.Error(err))
 	}
-
-	ctx, span := tracez.Start(ctx)
-	defer span.End()
 
 	runtime.ReadMemStats(&memStats)
 	logs.Stdout.Debug("memStats", slog.Uint64("allocKi", ki(memStats.Alloc)), slog.Uint64("totalAllocKi", ki(memStats.TotalAlloc)), slog.Uint64("sysKi", ki(memStats.Sys)))

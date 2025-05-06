@@ -84,10 +84,11 @@ ci: generate lint test ## CI command set
 .PHONY: up
 up:  ## Run docker compose up --wait -d
 	# Run in background (If failed to start, output logs and exit abnormally)
-	docker network ls | grep -q hostnetwork || docker network create hostnetwork
+	docker network inspect hostnetwork --format='{{.Id}}' || docker network create hostnetwork
 	if ! docker compose up --wait -d; then docker compose logs; exit 1; fi
 	@#printf '[\033[36mNOTICE\033[0m] %s\n' "    Jaeger UI: http://localhost:16686/search?limit=20&lookback=1h&maxDuration&minDuration&service=ormgen"
 	@printf '[\033[36mNOTICE\033[0m] %s\n' "   Grafana UI: http://localhost:33000/"
+	@printf '[\033[36mNOTICE\033[0m] %s\n' " Pyroscope UI: http://localhost:34040/"
 	@printf '[\033[36mNOTICE\033[0m] %s\n' "         Loki: http://localhost:33100/"
 	@printf '[\033[36mNOTICE\033[0m] %s\n' "  cAdvisor UI: http://localhost:38080/"
 	@printf '[\033[36mNOTICE\033[0m] %s\n' "Prometheus UI: http://localhost:39090/"
