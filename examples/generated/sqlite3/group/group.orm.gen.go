@@ -5,6 +5,7 @@ package group
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -86,6 +87,45 @@ func (s *_ORM) GetGroupByPK(ctx context.Context, queryerContext ormcommon.Querye
 		return nil, fmt.Errorf("row.Scan: %w", s.HandleError(ctx, err))
 	}
 	return group, nil
+}
+
+const GetOneGroupQuery = `SELECT id, name FROM group`
+
+func (s *_ORM) GetOneGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*group_.Group, error) {
+	config := new(ormopt.QueryConfig)
+	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyQueryOption(config)
+	}
+	query, args := config.ToSQL(GetOneGroupQuery, 1)
+
+	ormcommon.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var groupSlice group_.GroupSlice
+	for rows.Next() {
+		group := new(group_.Group)
+		err := rows.Scan(&group.ID, &group.Name)
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		groupSlice = append(groupSlice, group)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	if len(groupSlice) == 0 {
+		return nil, s.HandleError(ctx, sql.ErrNoRows)
+	}
+	if l := len(groupSlice); l > 1 {
+		return nil, fmt.Errorf("len(groupSlice)=%d: %w", l, ormcommon.ErrNotUnique)
+	}
+	return groupSlice[0], nil
 }
 
 const ListGroupQuery = `SELECT id, name FROM group`

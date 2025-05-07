@@ -36,6 +36,10 @@ type ORM interface {
 	ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
 	// SelectUserForUpdateByUsernameAndAddress locks a User by its UsernameAndAddress.
 	SelectUserForUpdateByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
+	// GetOneUser returns a User.
+	// If no rows are found, it returns sql.ErrNoRows.
+	// If multiple rows are found, it returns ormcommon.ErrNotUnique.
+	GetOneUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*user_.User, error)
 	// ListUser returns a slice of User.
 	ListUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error)
 	// SelectUserForUpdate locks a User.
@@ -56,6 +60,10 @@ type ORM interface {
 	GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
 	// SelectAdminUserForUpdateByPK locks a AdminUser by its primary keys.
 	SelectAdminUserForUpdateByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
+	// GetOneAdminUser returns a AdminUser.
+	// If no rows are found, it returns sql.ErrNoRows.
+	// If multiple rows are found, it returns ormcommon.ErrNotUnique.
+	GetOneAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*user_.AdminUser, error)
 	// ListAdminUser returns a slice of AdminUser.
 	ListAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error)
 	// SelectAdminUserForUpdate locks a AdminUser.

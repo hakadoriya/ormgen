@@ -26,6 +26,10 @@ type ORM interface {
 	BulkInsertGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, groupSlice []*group_.Group) error
 	// GetGroupByPK gets a Group by its primary keys.
 	GetGroupByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, id int) (*group_.Group, error)
+	// GetOneGroup returns a Group.
+	// If no rows are found, it returns sql.ErrNoRows.
+	// If multiple rows are found, it returns ormcommon.ErrNotUnique.
+	GetOneGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*group_.Group, error)
 	// ListGroup returns a slice of Group.
 	ListGroup(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (group_.GroupSlice, error)
 	// UpdateGroup updates a Group.

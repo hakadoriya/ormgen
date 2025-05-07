@@ -5,6 +5,7 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -195,6 +196,45 @@ func (s *_ORM) SelectUserForUpdateByUsernameAndAddress(ctx context.Context, quer
 		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
 	}
 	return userSlice, nil
+}
+
+const GetOneUserQuery = `SELECT user_id, username, address, group_id FROM user`
+
+func (s *_ORM) GetOneUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*user_.User, error) {
+	config := new(ormopt.QueryConfig)
+	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyQueryOption(config)
+	}
+	query, args := config.ToSQL(GetOneUserQuery, 1)
+
+	ormcommon.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var userSlice user_.UserSlice
+	for rows.Next() {
+		user := new(user_.User)
+		err := rows.Scan(&user.UserID, &user.Username, &user.Address, &user.GroupID)
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		userSlice = append(userSlice, user)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	if len(userSlice) == 0 {
+		return nil, s.HandleError(ctx, sql.ErrNoRows)
+	}
+	if l := len(userSlice); l > 1 {
+		return nil, fmt.Errorf("len(userSlice)=%d: %w", l, ormcommon.ErrNotUnique)
+	}
+	return userSlice[0], nil
 }
 
 const ListUserQuery = `SELECT user_id, username, address, group_id FROM user`
@@ -390,6 +430,45 @@ func (s *_ORM) SelectAdminUserForUpdateByPK(ctx context.Context, queryerContext 
 		return nil, fmt.Errorf("row.Scan: %w", s.HandleError(ctx, err))
 	}
 	return adminUser, nil
+}
+
+const GetOneAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`
+
+func (s *_ORM) GetOneAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*user_.AdminUser, error) {
+	config := new(ormopt.QueryConfig)
+	ormopt.WithPlaceholderGenerator(DefaultPlaceholderGenerator).ApplyResultOption(config)
+	for _, o := range opts {
+		o.ApplyQueryOption(config)
+	}
+	query, args := config.ToSQL(GetOneAdminUserQuery, 1)
+
+	ormcommon.LoggerFromContext(ctx).Debug(query)
+	rows, err := queryerContext.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("queryerContext.QueryContext: %w", s.HandleError(ctx, err))
+	}
+	var adminUserSlice user_.AdminUserSlice
+	for rows.Next() {
+		admin_user := new(user_.AdminUser)
+		err := rows.Scan(&admin_user.AdminUserID, &admin_user.Username, &admin_user.GroupID)
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", s.HandleError(ctx, err))
+		}
+		adminUserSlice = append(adminUserSlice, admin_user)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, fmt.Errorf("rows.Close: %w", s.HandleError(ctx, err))
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
+	}
+	if len(adminUserSlice) == 0 {
+		return nil, s.HandleError(ctx, sql.ErrNoRows)
+	}
+	if l := len(adminUserSlice); l > 1 {
+		return nil, fmt.Errorf("len(adminUserSlice)=%d: %w", l, ormcommon.ErrNotUnique)
+	}
+	return adminUserSlice[0], nil
 }
 
 const ListAdminUserQuery = `SELECT admin_user_id, username, group_id FROM admin_user`

@@ -4,6 +4,7 @@ package ormcommon
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"io"
 	"log/slog"
 )
@@ -14,6 +15,9 @@ type QueryerContext interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
+
+// ErrNotUnique is returned when a query returns multiple rows.
+var ErrNotUnique = errors.New("not unique")
 
 // NOTE: noopLogger needs var declare for default use.
 //
