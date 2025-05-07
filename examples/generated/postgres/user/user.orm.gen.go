@@ -229,10 +229,10 @@ func (s *_ORM) GetOneUser(ctx context.Context, queryerContext ormcommon.QueryerC
 		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
 	}
 	if len(userSlice) == 0 {
-		return nil, s.HandleError(ctx, sql.ErrNoRows)
+		return nil, fmt.Errorf("len(userSlice)==0: %w", s.HandleError(ctx, sql.ErrNoRows))
 	}
 	if l := len(userSlice); l > 1 {
-		return nil, fmt.Errorf("len(userSlice)=%d: %w", l, ormcommon.ErrNotUnique)
+		return nil, fmt.Errorf("len(userSlice)==%d: %w", l, s.HandleError(ctx, ormcommon.ErrNotUnique))
 	}
 	return userSlice[0], nil
 }
@@ -463,10 +463,10 @@ func (s *_ORM) GetOneAdminUser(ctx context.Context, queryerContext ormcommon.Que
 		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
 	}
 	if len(adminUserSlice) == 0 {
-		return nil, s.HandleError(ctx, sql.ErrNoRows)
+		return nil, fmt.Errorf("len(adminUserSlice)==0: %w", s.HandleError(ctx, sql.ErrNoRows))
 	}
 	if l := len(adminUserSlice); l > 1 {
-		return nil, fmt.Errorf("len(adminUserSlice)=%d: %w", l, ormcommon.ErrNotUnique)
+		return nil, fmt.Errorf("len(adminUserSlice)==%d: %w", l, s.HandleError(ctx, ormcommon.ErrNotUnique))
 	}
 	return adminUserSlice[0], nil
 }
