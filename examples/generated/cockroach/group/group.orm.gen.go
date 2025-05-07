@@ -133,10 +133,10 @@ func (s *_ORM) GetOneGroup(ctx context.Context, queryerContext ormcommon.Queryer
 		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
 	}
 	if len(groupSlice) == 0 {
-		return nil, s.HandleError(ctx, sql.ErrNoRows)
+		return nil, fmt.Errorf("len(groupSlice)==0: %w", s.HandleError(ctx, sql.ErrNoRows))
 	}
 	if l := len(groupSlice); l > 1 {
-		return nil, fmt.Errorf("len(groupSlice)=%d: %w", l, ormcommon.ErrNotUnique)
+		return nil, fmt.Errorf("len(groupSlice)==%d: %w", l, s.HandleError(ctx, ormcommon.ErrNotUnique))
 	}
 	return groupSlice[0], nil
 }
