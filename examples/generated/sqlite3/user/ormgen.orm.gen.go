@@ -30,6 +30,10 @@ type ORM interface {
 	GetUserByUsername(ctx context.Context, queryerContext ormcommon.QueryerContext, username string) (*user_.User, error)
 	// ListUserByUsernameAndAddress returns a slice of User by its UsernameAndAddress.
 	ListUserByUsernameAndAddress(ctx context.Context, queryerContext ormcommon.QueryerContext, username string, address string, opts ...ormopt.ResultOption) (user_.UserSlice, error)
+	// GetOneUser returns a User.
+	// If no rows are found, it returns sql.ErrNoRows.
+	// If multiple rows are found, it returns ormcommon.ErrNotUnique.
+	GetOneUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*user_.User, error)
 	// ListUser returns a slice of User.
 	ListUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.UserSlice, error)
 	// UpdateUser updates a User.
@@ -46,6 +50,10 @@ type ORM interface {
 	BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, adminUserSlice []*user_.AdminUser) error
 	// GetAdminUserByPK gets a AdminUser by its primary keys.
 	GetAdminUserByPK(ctx context.Context, queryerContext ormcommon.QueryerContext, admin_user_id int) (*user_.AdminUser, error)
+	// GetOneAdminUser returns a AdminUser.
+	// If no rows are found, it returns sql.ErrNoRows.
+	// If multiple rows are found, it returns ormcommon.ErrNotUnique.
+	GetOneAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (*user_.AdminUser, error)
 	// ListAdminUser returns a slice of AdminUser.
 	ListAdminUser(ctx context.Context, queryerContext ormcommon.QueryerContext, opts ...ormopt.QueryOption) (user_.AdminUserSlice, error)
 	// UpdateAdminUser updates a AdminUser.
