@@ -235,10 +235,10 @@ func (s *_ORM) GetOne{{ $table.StructName }}(ctx context.Context, queryerContext
 		return nil, fmt.Errorf("rows.Err: %w", s.HandleError(ctx, err))
 	}
 	if len({{ $table.StructName | lowerFirst }}Slice) == 0 {
-		return nil, s.HandleError(ctx, sql.ErrNoRows)
+		return nil, fmt.Errorf("len({{ $table.StructName | lowerFirst }}Slice)==0: %w", s.HandleError(ctx, sql.ErrNoRows))
 	}
 	if l := len({{ $table.StructName | lowerFirst }}Slice); l > 1 {
-		return nil, fmt.Errorf("len({{ $table.StructName | lowerFirst }}Slice)=%d: %w", l, {{ $ormcommonPackageImportPath }}.ErrNotUnique)
+		return nil, fmt.Errorf("len({{ $table.StructName | lowerFirst }}Slice)==%d: %w", l, s.HandleError(ctx, {{ $ormcommonPackageImportPath }}.ErrNotUnique))
 	}
 	return {{ $table.StructName | lowerFirst }}Slice[0], nil
 }
