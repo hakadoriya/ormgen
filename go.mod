@@ -4,9 +4,9 @@ go 1.23.4
 
 require (
 	github.com/grafana/pyroscope-go v1.2.2
-	github.com/hakadoriya/z.go v0.0.1-0.20250426022641-5e85426cd3e7
-	github.com/hakadoriya/z.go/grpcz v0.0.0-20250426022641-5e85426cd3e7
-	github.com/hakadoriya/z.go/otelz v0.0.0-20250426022641-5e85426cd3e7
+	github.com/hakadoriya/z.go v0.0.1-0.20250510012358-f3b99a36ef52
+	github.com/hakadoriya/z.go/grpcz v0.0.0-20250510012358-f3b99a36ef52
+	github.com/hakadoriya/z.go/otelz v0.0.0-20250510012358-f3b99a36ef52
 	go.opentelemetry.io/contrib/bridges/otelslog v0.10.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.60.0
 	go.opentelemetry.io/otel v1.35.0
