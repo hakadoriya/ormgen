@@ -35,6 +35,10 @@ func (s *User) ColumnName_GroupID() string {
 
 type UserSlice []*User
 
+func (s UserSlice) GetSlice() []*User {
+	return s
+}
+
 func (s UserSlice) TableName() string {
 	return "user"
 }
@@ -93,6 +97,10 @@ func (s *AdminUser) ColumnName_GroupID() string {
 }
 
 type AdminUserSlice []*AdminUser
+
+func (s AdminUserSlice) GetSlice() []*AdminUser {
+	return s
+}
 
 func (s AdminUserSlice) TableName() string {
 	return "admin_user"
