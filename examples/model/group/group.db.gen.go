@@ -27,6 +27,10 @@ func (s *Group) ColumnName_Name() string {
 
 type GroupSlice []*Group
 
+func (s GroupSlice) GetSlice() []*Group {
+	return s
+}
+
 func (s GroupSlice) TableName() string {
 	return "group"
 }

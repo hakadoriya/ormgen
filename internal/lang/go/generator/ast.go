@@ -142,6 +142,21 @@ func fprintTableMethods(ctx context.Context, w io.Writer, fileSource *source.Fil
 						Type: &ast.ArrayType{Elt: &ast.StarExpr{X: &ast.Ident{Name: structSource.TypeSpec.Name.Name}}},
 					}},
 				},
+				//	func (s StructNameSlice) GetSlice() []*StructName {
+				//		return s
+				//	}
+				&ast.FuncDecl{
+					Recv: &ast.FieldList{List: []*ast.Field{{
+						Names: []*ast.Ident{{Name: "s"}},
+						Type:  &ast.Ident{Name: structSource.TypeSpec.Name.Name + cfg.GoSliceTypeSuffix},
+					}}},
+					Name: &ast.Ident{Name: "GetSlice"},
+					Type: &ast.FuncType{
+						Params:  &ast.FieldList{},
+						Results: &ast.FieldList{List: []*ast.Field{{Type: &ast.Ident{Name: "[]*" + structSource.TypeSpec.Name.Name}}}},
+					},
+					Body: &ast.BlockStmt{List: []ast.Stmt{&ast.ReturnStmt{Results: []ast.Expr{&ast.Ident{Name: "s"}}}}},
+				},
 				//	func (s StructNameSlice) TableName() string {
 				//		return "TableName"
 				//	}
