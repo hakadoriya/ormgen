@@ -10,7 +10,7 @@ services:
     depends_on:
       - loki
     # ref: https://hub.docker.com/r/otel/opentelemetry-collector-contrib/tags
-    image: otel/opentelemetry-collector-contrib:0.123.0
+    image: otel/opentelemetry-collector-contrib:0.128.0
     restart: always
     networks:
       hostnetwork:
@@ -35,7 +35,7 @@ services:
 
   loki:
     # ref: https://hub.docker.com/r/grafana/loki/tags
-    image: grafana/loki:3.5.0
+    image: grafana/loki:3.5.1
     networks:
       hostnetwork:
     ports:
@@ -81,7 +81,7 @@ services:
       - otelcol
       - cadvisor
     # ref: https://hub.docker.com/r/prom/prometheus/tags
-    image: prom/prometheus:v3.3.1
+    image: prom/prometheus:v3.4.1
     restart: always
     networks:
       hostnetwork:
@@ -123,7 +123,7 @@ services:
       - minio
       - tempo-init
     # ref: https://hub.docker.com/r/grafana/tempo/tags
-    image: &tempoImage grafana/tempo:2.7.2
+    image: &tempoImage grafana/tempo:2.8.0
     restart: always
     networks:
       hostnetwork:
@@ -158,7 +158,7 @@ services:
 
   pyroscope:
     # ref: https://hub.docker.com/r/grafana/pyroscope/tags
-    image: grafana/pyroscope:1.13.2
+    image: grafana/pyroscope:1.13.4
     restart: always
     networks:
       hostnetwork:
@@ -167,7 +167,7 @@ services:
 
   grafana:
     # ref: https://hub.docker.com/r/grafana/grafana/tags
-    image: grafana/grafana:12.0.0
+    image: grafana/grafana:12.0.1
     restart: always
     networks:
       hostnetwork:
