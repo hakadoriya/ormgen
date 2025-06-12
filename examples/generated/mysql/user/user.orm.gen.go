@@ -40,8 +40,8 @@ func (s *_ORM) BulkInsertUser(ctx context.Context, queryerContext ormcommon.Quer
 	)
 
 	maxRowsPerQuery := DefaultBulkInsertMaxPlaceholdersPerQuery / placeholdersPerRow
-	placeholderIdx := placeholderStartAt
 	for i := 0; i < len(userSlice); i += maxRowsPerQuery {
+		placeholderIdx := placeholderStartAt
 		end := i + maxRowsPerQuery
 		if end > len(userSlice) {
 			end = len(userSlice)
@@ -370,8 +370,8 @@ func (s *_ORM) BulkInsertAdminUser(ctx context.Context, queryerContext ormcommon
 	)
 
 	maxRowsPerQuery := DefaultBulkInsertMaxPlaceholdersPerQuery / placeholdersPerRow
-	placeholderIdx := placeholderStartAt
 	for i := 0; i < len(adminUserSlice); i += maxRowsPerQuery {
+		placeholderIdx := placeholderStartAt
 		end := i + maxRowsPerQuery
 		if end > len(adminUserSlice) {
 			end = len(adminUserSlice)

@@ -40,8 +40,8 @@ func (s *_ORM) BulkInsert{{ $table.StructName }}(ctx context.Context, queryerCon
 	)
 
 	maxRowsPerQuery := DefaultBulkInsertMaxPlaceholdersPerQuery / placeholdersPerRow
-	placeholderIdx := placeholderStartAt
 	for i := 0; i < len({{ $table.StructName | lowerFirst }}Slice); i += maxRowsPerQuery {
+		placeholderIdx := placeholderStartAt
 		end := i + maxRowsPerQuery
 		if end > len({{ $table.StructName | lowerFirst }}Slice) {
 			end = len({{ $table.StructName | lowerFirst }}Slice)
