@@ -40,8 +40,8 @@ func (s *_ORM) BulkInsertGroup(ctx context.Context, queryerContext ormcommon.Que
 	)
 
 	maxRowsPerQuery := DefaultBulkInsertMaxPlaceholdersPerQuery / placeholdersPerRow
-	placeholderIdx := placeholderStartAt
 	for i := 0; i < len(groupSlice); i += maxRowsPerQuery {
+		placeholderIdx := placeholderStartAt
 		end := i + maxRowsPerQuery
 		if end > len(groupSlice) {
 			end = len(groupSlice)
