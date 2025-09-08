@@ -51,7 +51,7 @@ jobs:
     needs: paths-filter
     if: ${{ needs.paths-filter.outputs.skip != 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: DEBUG
         shell: bash
         run: |
@@ -90,7 +90,7 @@ jobs:
           # Setup versenv
           direnv allow ${{ env.WORKDIR }}
           make versenv
-      - uses: actions/setup-go@v5 # ref. https://github.com/actions/setup-go#usage
+      - uses: actions/setup-go@v6 # ref. https://github.com/actions/setup-go#usage
         id: setup-go
         with:
           cache: false
