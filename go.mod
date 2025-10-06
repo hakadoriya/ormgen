@@ -3,15 +3,15 @@ module github.com/hakadoriya/ormgen
 go 1.23.4
 
 require (
-	github.com/grafana/pyroscope-go v1.2.2
-	github.com/hakadoriya/z.go v0.0.1-0.20250426022641-5e85426cd3e7
-	github.com/hakadoriya/z.go/grpcz v0.0.0-20250426022641-5e85426cd3e7
-	github.com/hakadoriya/z.go/otelz v0.0.0-20250426022641-5e85426cd3e7
-	go.opentelemetry.io/contrib/bridges/otelslog v0.10.0
-	go.opentelemetry.io/contrib/instrumentation/runtime v0.60.0
-	go.opentelemetry.io/otel v1.35.0
-	go.opentelemetry.io/otel/sdk v1.35.0
-	google.golang.org/grpc v1.72.0
+	github.com/grafana/pyroscope-go v1.2.7
+	github.com/hakadoriya/z.go 794787c25047
+	github.com/hakadoriya/z.go/grpcz 794787c25047
+	github.com/hakadoriya/z.go/otelz 794787c25047
+	go.opentelemetry.io/contrib/bridges/otelslog v0.13.0
+	go.opentelemetry.io/contrib/instrumentation/runtime v0.63.0
+	go.opentelemetry.io/otel v1.38.0
+	go.opentelemetry.io/otel/sdk v1.38.0
+	google.golang.org/grpc v1.76.0
 )
 
 require (
